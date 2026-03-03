@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Holme & Hadfield · Financial Controller Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --card: #1a1d27;
+  --card-hover: #222633;
+  --border: #2a2e3d;
+  --text: #e4e4e7;
+  --muted: #8b8fa3;
+  --accent: #c8a97e;
+  --accent-light: #e0c9a6;
+  --green: #4ade80;
+  --green-bg: rgba(74,222,128,0.1);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.1);
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --orange: #fb923c;
+  --cyan: #22d3ee;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 'Segoe UI', sans-serif; min-height: 100vh; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* HEADER */
+.header {
+  background: var(--card); border-bottom: 1px solid var(--border);
+  padding: 14px 28px; display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0; z-index: 100;
+}
+.logo-group { display: flex; align-items: center; gap: 12px; }
+.logo-icon {
+  width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: var(--bg); font-weight: 800; font-size: 13px; letter-spacing: -0.5px;
+}
+.logo-text h1 { font-size: 15px; font-weight: 700; letter-spacing: 1px; color: var(--text); }
+.logo-text span { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+.header-right { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--muted); }
+.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); display: inline-block; }
+
+/* NAV */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 28px; border-bottom: 1px solid var(--border);
+  background: rgba(26,29,39,0.85); backdrop-filter: blur(10px);
+  position: sticky; top: 58px; z-index: 99;
+}
+.tabs { display: flex; gap: 4px; }
+.tab-btn {
+  background: transparent; color: var(--muted); border: none; border-radius: 8px;
+  padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 500;
+  font-family: inherit; transition: all 0.2s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { background: var(--accent); color: var(--bg); font-weight: 700; }
+.filters { display: flex; gap: 12px; align-items: center; }
+.filter-label { color: var(--muted); font-size: 12px; }
+.filter-select {
+  background: var(--card); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 30px 6px 12px; font-size: 13px; font-family: inherit;
+  outline: none; cursor: pointer; appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b8fa3' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+}
+
+/* LAYOUT */
+.content { padding: 24px 28px; max-width: 1420px; margin: 0 auto; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* GRID */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.grid-kpi { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+.grid-14 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+.grid-21 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+.gap { margin-bottom: 16px; }
+@media (max-width: 900px) {
+  .grid-2, .grid-3, .grid-4, .grid-14, .grid-21 { grid-template-columns: 1fr; }
+}
+
+/* CARD */
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+}
+.card h3 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 16px; letter-spacing: 0.2px; }
+
+/* KPI CARD */
+.kpi-value { font-size: 28px; font-weight: 700; color: var(--text); margin: 6px 0; font-family: 'DM Sans', sans-serif; }
+.kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+.kpi-badge {
+  display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+}
+.kpi-badge.up { color: var(--green); background: var(--green-bg); }
+.kpi-badge.down { color: var(--red); background: var(--red-bg); }
+.kpi-target { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin: 8px 0 4px; }
+.progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+
+/* TABLE */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+th {
+  padding: 10px 14px; text-align: left; color: var(--muted); font-weight: 600;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+  border-bottom: 1px solid var(--border); white-space: nowrap; position: sticky; top: 0; background: var(--card);
+}
+td { padding: 10px 14px; color: var(--text); border-bottom: 1px solid rgba(42,46,61,0.3); white-space: nowrap; }
+tr:hover td { background: var(--card-hover); }
+th.r, td.r { text-align: right; }
+td.mono { font-family: 'DM Mono', monospace; }
+
+/* BADGES */
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
+}
+.badge-green { color: var(--green); background: rgba(74,222,128,0.12); }
+.badge-orange { color: var(--orange); background: rgba(251,146,60,0.12); }
+.badge-red { color: var(--red); background: rgba(248,113,113,0.12); }
+
+/* CHART CANVAS */
+.chart-container { position: relative; width: 100%; }
+
+/* ALERT BOX */
+.alert-box {
+  margin-top: 14px; padding: 12px 16px; border-radius: 8px;
+  background: rgba(200,169,126,0.08); border: 1px solid rgba(200,169,126,0.25);
+  font-size: 12px; color: var(--accent); font-weight: 500; line-height: 1.5;
+}
+
+/* P&L TABLE */
+.pl-row { transition: background 0.15s; }
+.pl-row:hover { background: var(--card-hover); }
+.pl-bold td { font-weight: 700; border-top: 1px solid var(--border); }
+.pl-accent td:first-child { color: var(--accent); }
+
+/* TOP PERFORMERS */
+.top-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid rgba(42,46,61,0.2);
+}
+.top-item:last-child { border-bottom: none; }
+.top-rank { color: var(--accent); font-size: 16px; font-weight: 700; width: 28px; font-family: 'DM Mono', monospace; }
+.top-name { font-size: 13px; color: var(--text); }
+.top-val { font-size: 13px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+
+/* MINI KPI */
+.mini-kpi .kpi-label { font-size: 11px; }
+.mini-kpi .kpi-value { font-size: 22px; margin: 4px 0 2px; }
+.mini-kpi .kpi-sub { font-size: 12px; color: var(--muted); }
+.mini-kpi .kpi-sub b { color: var(--green); }
+
+/* FOOTER */
+.footer {
+  padding: 14px 28px; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; font-size: 11px; color: var(--muted);
+}
+
+/* Channel card */
+.ch-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.ch-name { color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.ch-growth { color: var(--green); font-size: 12px; font-weight: 600; }
+.ch-value { font-size: 24px; font-weight: 700; color: var(--text); font-family: 'DM Sans', sans-serif; }
+.ch-meta { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.ch-bar { margin-top: 8px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.ch-bar-fill { height: 100%; border-radius: 2px; }
+.ch-pct { font-size: 11px; color: var(--muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo-group">
+    <div class="logo-icon">H&H</div>
+    <div class="logo-text">
+      <h1>HOLME & HADFIELD</h1>
+      <span>Financial Controller Dashboard</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <span>FY 2025 · Updated: Mar 03, 2026</span>
+    <span class="sync-dot"></span>
+    <span style="color:var(--green);font-weight:600;">QuickBooks Synced</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav-bar">
+  <div class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="overview">KPI Overview</button>
+    <button class="tab-btn" data-tab="pl">P&L</button>
+    <button class="tab-btn" data-tab="cashflow">Cash Flow</button>
+    <button class="tab-btn" data-tab="channels">Channels</button>
+    <button class="tab-btn" data-tab="products">Products</button>
+    <button class="tab-btn" data-tab="inventory">Inventory</button>
+    <button class="tab-btn" data-tab="international">International</button>
+  </div>
+  <div class="filters" id="filters"></div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- ========== TAB: OVERVIEW ========== -->
+<div class="tab-panel active" id="panel-overview">
+  <div class="grid-kpi gap" id="kpi-grid"></div>
+  <div class="grid-2">
+    <div class="card"><h3>Monthly Revenue Trend (FY 2025)</h3><div class="chart-container" style="height:290px"><canvas id="chartRevTrend"></canvas></div></div>
+    <div class="card"><h3>EBITDA vs Gross Profit</h3><div class="chart-container" style="height:290px"><canvas id="chartEbitda"></canvas></div></div>
+  </div>
+</div>
+
+<!-- ========== TAB: P&L ========== -->
+<div class="tab-panel" id="panel-pl">
+  <div class="grid-2">
+    <div class="card">
+      <h3 id="pl-title">Income Statement (YTD 2025)</h3>
+      <div class="table-wrap"><table id="pl-table"></table></div>
+    </div>
+    <div class="card"><h3>Monthly Margin Waterfall</h3><div class="chart-container" style="height:370px"><canvas id="chartWaterfall"></canvas></div></div>
+  </div>
+</div>
+
+<!-- ========== TAB: CASH FLOW ========== -->
+<div class="tab-panel" id="panel-cashflow">
+  <div class="grid-4 gap" id="cf-kpis"></div>
+  <div class="grid-21">
+    <div class="card"><h3>12-Week Cash Flow Forecast</h3><div class="chart-container" style="height:310px"><canvas id="chartCF"></canvas></div></div>
+    <div class="card"><h3>Cash Allocation</h3><div class="chart-container" style="height:310px"><canvas id="chartCFPie"></canvas></div></div>
+  </div>
+</div>
+
+<!-- ========== TAB: CHANNELS ========== -->
+<div class="tab-panel" id="panel-channels">
+  <div class="grid-4 gap" id="ch-cards"></div>
+  <div class="grid-2">
+    <div class="card"><h3>Revenue by Channel (Monthly)</h3><div class="chart-container" style="height:310px"><canvas id="chartChBar"></canvas></div></div>
+    <div class="card"><h3>Channel P&L Breakdown</h3><div class="table-wrap" id="ch-table-wrap"></div></div>
+  </div>
+</div>
+
+<!-- ========== TAB: PRODUCTS ========== -->
+<div class="tab-panel" id="panel-products">
+  <div class="grid-14">
+    <div class="card"><h3>Product Unit Economics</h3><div class="table-wrap" style="max-height:440px;overflow-y:auto" id="prod-table-wrap"></div></div>
+    <div>
+      <div class="card gap"><h3>Revenue by Category</h3><div class="chart-container" style="height:250px"><canvas id="chartProdPie"></canvas></div></div>
+      <div class="card"><h3>Top Performers</h3><div id="top-performers"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TAB: INVENTORY ========== -->
+<div class="tab-panel" id="panel-inventory">
+  <div class="grid-4 gap" id="inv-kpis"></div>
+  <div class="card"><h3>Inventory Status by SKU</h3><div class="table-wrap" id="inv-table-wrap"></div></div>
+</div>
+
+<!-- ========== TAB: INTERNATIONAL ========== -->
+<div class="tab-panel" id="panel-international">
+  <div class="grid-2 gap">
+    <div class="card">
+      <h3>FX Exposure & Hedging</h3>
+      <div class="table-wrap" id="fx-table-wrap"></div>
+      <div class="alert-box">⚠ CNY exposure is the largest unhedged risk. Recommend increasing hedge ratio to 80%+ given upcoming PO cycle with Chinese manufacturers.</div>
+    </div>
+    <div class="card"><h3>Revenue by Geography</h3><div class="chart-container" style="height:290px"><canvas id="chartGeoPie"></canvas></div></div>
+  </div>
+  <div class="card"><h3>VAT / Sales Tax Compliance Tracker</h3><div class="table-wrap" id="vat-table-wrap"></div></div>
+</div>
+
+</div><!-- /content -->
+
+<!-- FOOTER -->
+<div class="footer">
+  <span>Prototype Dashboard — Sample data for illustration purposes only · No real company data was used</span>
+  <span>Built by Luis Suárez · Financial Systems & Dashboard Expert · luisfsuav@gmail.com</span>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+const monthlyRevenue = [
+  {dtc:95000,amazon:210000,wholesale:45000,etsy:12000},
+  {dtc:88000,amazon:195000,wholesale:42000,etsy:10000},
+  {dtc:110000,amazon:230000,wholesale:55000,etsy:14000},
+  {dtc:105000,amazon:240000,wholesale:50000,etsy:13000},
+  {dtc:120000,amazon:260000,wholesale:58000,etsy:15000},
+  {dtc:115000,amazon:245000,wholesale:52000,etsy:14000},
+  {dtc:98000,amazon:220000,wholesale:48000,etsy:11000},
+  {dtc:125000,amazon:270000,wholesale:60000,etsy:16000},
+  {dtc:140000,amazon:290000,wholesale:65000,etsy:18000},
+  {dtc:160000,amazon:320000,wholesale:72000,etsy:20000},
+  {dtc:195000,amazon:385000,wholesale:85000,etsy:25000},
+  {dtc:210000,amazon:410000,wholesale:90000,etsy:28000},
+];
+
+const plData = [
+  {revenue:362000,cogs:130320,gross:231680,opex:152040,ebitda:79640},
+  {revenue:335000,cogs:120600,gross:214400,opex:147400,ebitda:67000},
+  {revenue:409000,cogs:147240,gross:261760,opex:159510,ebitda:102250},
+  {revenue:408000,cogs:146880,gross:261120,opex:159120,ebitda:102000},
+  {revenue:453000,cogs:163080,gross:289920,opex:167610,ebitda:122310},
+  {revenue:426000,cogs:153360,gross:272640,opex:161880,ebitda:110760},
+  {revenue:377000,cogs:135720,gross:241280,opex:154270,ebitda:87010},
+  {revenue:471000,cogs:169560,gross:301440,opex:171210,ebitda:130230},
+  {revenue:513000,cogs:184680,gross:328320,opex:179130,ebitda:149190},
+  {revenue:572000,cogs:205920,gross:366080,opex:190160,ebitda:175920},
+  {revenue:690000,cogs:248400,gross:441600,opex:213000,ebitda:228600},
+  {revenue:738000,cogs:265680,gross:472320,opex:222420,ebitda:249900},
+];
+
+const productData = [
+  {name:"Watch Deck Pro",units:14200,revenue:1420000,cogs:426000,margin:70,category:"Watches"},
+  {name:"Collector Pro",units:5800,revenue:1334000,cogs:400200,margin:70,category:"Watches"},
+  {name:"The Legacy",units:1200,revenue:594000,cogs:207900,margin:65,category:"Watches"},
+  {name:"Combo Deck Pro",units:3400,revenue:578000,cogs:179180,margin:69,category:"Combo"},
+  {name:"Armory Pro",units:2100,revenue:598500,cogs:179550,margin:70,category:"Knives"},
+  {name:"The Hub",units:4500,revenue:405000,cogs:141750,margin:65,category:"Lifestyle"},
+  {name:"Coin Deck",units:2800,revenue:294000,cogs:91140,margin:69,category:"Coins"},
+  {name:"The Winder",units:420,revenue:302400,cogs:120960,margin:60,category:"Watches"},
+  {name:"The Gallery",units:1100,revenue:181500,cogs:61710,margin:66,category:"Jewelry"},
+  {name:"Accessories",units:8200,revenue:246000,cogs:73800,margin:70,category:"Other"},
+];
+
+const inventoryData = [
+  {sku:"WDP-WAL",name:"Watch Deck Pro - Walnut",onHand:1240,inTransit:800,reorderPt:500,avgCost:30,weeks:6.2},
+  {sku:"WDP-BLK",name:"Watch Deck Pro - Black",onHand:980,inTransit:600,reorderPt:400,avgCost:30,weeks:5.1},
+  {sku:"COL-PRO",name:"Collector Pro",onHand:620,inTransit:400,reorderPt:300,avgCost:69,weeks:5.8},
+  {sku:"LEG-WAL",name:"Legacy - Walnut",onHand:145,inTransit:100,reorderPt:80,avgCost:173,weeks:7.2},
+  {sku:"CMD-PRO",name:"Combo Deck Pro",onHand:380,inTransit:250,reorderPt:200,avgCost:53,weeks:4.8},
+  {sku:"ARM-PRO",name:"Armory Pro",onHand:290,inTransit:200,reorderPt:150,avgCost:85,weeks:6.5},
+  {sku:"HUB-BLK",name:"The Hub - Black",onHand:520,inTransit:300,reorderPt:250,avgCost:31,weeks:5.0},
+  {sku:"WND-WAL",name:"The Winder - Walnut",onHand:68,inTransit:50,reorderPt:30,avgCost:288,weeks:8.1},
+  {sku:"GAL-001",name:"The Gallery",onHand:155,inTransit:100,reorderPt:60,avgCost:56,weeks:7.5},
+  {sku:"CND-OAK",name:"Coin Deck - Oak",onHand:340,inTransit:200,reorderPt:150,avgCost:33,weeks:5.4},
+];
+
+const fxData = [
+  {currency:"GBP",exposure:485000,rate:1.2700,hedged:62,pnl:12400},
+  {currency:"EUR",exposure:380000,rate:1.0800,hedged:55,pnl:-8200},
+  {currency:"CAD",exposure:210000,rate:0.7400,hedged:40,pnl:3100},
+  {currency:"AUD",exposure:95000,rate:0.6500,hedged:30,pnl:-1800},
+  {currency:"CNY",exposure:720000,rate:0.1400,hedged:70,pnl:-15600},
+];
+
+const vatData = [
+  {jurisdiction:"USA (Multi-state)",collected:312000,remitted:298000,due:14000,nextFiling:"2026-04-15",status:"Current"},
+  {jurisdiction:"UK (VAT 20%)",collected:97000,remitted:85000,due:12000,nextFiling:"2026-04-07",status:"Current"},
+  {jurisdiction:"Germany (VAT 19%)",collected:62000,remitted:55000,due:7000,nextFiling:"2026-04-10",status:"Current"},
+  {jurisdiction:"EU OSS",collected:48000,remitted:41000,due:7000,nextFiling:"2026-04-30",status:"Pending"},
+  {jurisdiction:"Canada (GST/HST)",collected:28000,remitted:25000,due:3000,nextFiling:"2026-06-15",status:"Current"},
+];
+
+const channelMetrics = [
+  {ch:"Amazon",rev:3275000,pct:56.8,cogs:1179000,fees:425000,ads:295000,margin:42.0,aov:118,orders:27754,growth:38,color:"var(--blue)"},
+  {ch:"DTC (Shopify)",rev:1661000,pct:28.8,cogs:598000,fees:66440,ads:248000,margin:45.1,aov:152,orders:10927,growth:85,color:"var(--accent)"},
+  {ch:"Wholesale",rev:622000,pct:10.8,cogs:311000,fees:0,ads:0,margin:50.0,aov:2800,orders:222,growth:42,color:"var(--purple)"},
+  {ch:"Etsy",rev:196000,pct:3.4,cogs:70560,fees:31360,ads:15000,margin:40.3,aov:98,orders:2000,growth:25,color:"var(--orange)"},
+];
+
+const kpiCards = [
+  {label:"YTD Revenue",value:"$5.75M",change:49.5,target:"$6.0M",pct:95.8},
+  {label:"Gross Margin",value:"64.0%",change:2.1,target:"65%",pct:98.5},
+  {label:"EBITDA",value:"$1.60M",change:68.2,target:"$1.8M",pct:88.9},
+  {label:"Cash Position",value:"$482K",change:12.3,target:"$500K",pct:96.4},
+  {label:"Orders YTD",value:"44,220",change:32.1,target:"48,000",pct:92.1},
+  {label:"AOV",value:"$130",change:8.4,target:"$135",pct:96.3},
+  {label:"CAC (Blended)",value:"$28.40",change:-5.2,target:"$25.00",pct:87.1},
+  {label:"LTV:CAC Ratio",value:"4.2x",change:15.0,target:"5.0x",pct:84.0},
+];
+
+// ============================================================
+// HELPERS
+// ============================================================
+const fmt = (v) => {
+  if(Math.abs(v)>=1e6) return '$'+(v/1e6).toFixed(1)+'M';
+  if(Math.abs(v)>=1e3) return '$'+(v/1e3).toFixed(0)+'K';
+  return '$'+v.toFixed(0);
+};
+const fmtFull = (v) => '$'+v.toLocaleString();
+const pctColor = (v) => v>=0?'var(--green)':'var(--red)';
+const marginColor = (v) => v>=45?'var(--green)':v>=40?'var(--orange)':'var(--red)';
+const stockBadge = (w) => {
+  if(w>6) return '<span class="badge badge-green">Healthy</span>';
+  if(w>4) return '<span class="badge badge-orange">Watch</span>';
+  return '<span class="badge badge-red">Low</span>';
+};
+const statusBadge = (s) => {
+  if(s==="Current") return '<span class="badge badge-green">Current</span>';
+  if(s==="Pending") return '<span class="badge badge-orange">Pending</span>';
+  return '<span class="badge badge-red">'+s+'</span>';
+};
+
+// Chart.js global
+Chart.defaults.color = '#8b8fa3';
+Chart.defaults.borderColor = '#2a2e3d';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.plugins.legend.labels.padding = 16;
+
+let charts = {};
+function destroyChart(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+// ============================================================
+// RENDER: KPI Overview
+// ============================================================
+function renderKPIGrid() {
+  const grid = document.getElementById('kpi-grid');
+  grid.innerHTML = kpiCards.map(k => {
+    const up = k.change >= 0;
+    const barColor = k.pct>=90?'var(--green)':k.pct>=70?'var(--orange)':'var(--red)';
+    return `<div class="card">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <span class="kpi-badge ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(k.change).toFixed(1)}% YoY</span>
+      <div class="kpi-target"><span>vs Target: ${k.target}</span><span>${k.pct.toFixed(1)}%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(k.pct,100)}%;background:${barColor}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderOverviewCharts() {
+  // Revenue Trend
+  destroyChart('revTrend');
+  charts.revTrend = new Chart(document.getElementById('chartRevTrend'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [{
+        label: 'Revenue',
+        data: plData.map(d=>d.revenue),
+        borderColor: '#c8a97e',
+        backgroundColor: 'rgba(200,169,126,0.12)',
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        pointBackgroundColor: '#c8a97e',
+        borderWidth: 2.5,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { y: { ticks: { callback: v=>fmt(v) }, grid: { color:'#2a2e3d44' } }, x: { grid: { display:false } } },
+      plugins: { tooltip: { callbacks: { label: ctx => fmt(ctx.raw) } } }
+    }
+  });
+
+  // EBITDA vs Gross
+  destroyChart('ebitda');
+  charts.ebitda = new Chart(document.getElementById('chartEbitda'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label:'Gross Profit', data: plData.map(d=>d.gross), backgroundColor:'rgba(96,165,250,0.5)', borderRadius:4 },
+        { label:'EBITDA', data: plData.map(d=>d.ebitda), backgroundColor:'rgba(74,222,128,0.6)', borderRadius:4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { y: { ticks: { callback: v=>fmt(v) }, grid:{color:'#2a2e3d44'} }, x: { grid:{display:false} } },
+      plugins: { tooltip: { callbacks: { label: ctx => ctx.dataset.label+': '+fmt(ctx.raw) } } }
+    }
+  });
+}
+
+// ============================================================
+// RENDER: P&L
+// ============================================================
+function renderPL(periodIdx) {
+  const filtered = periodIdx === 'all' ? plData : [plData[parseInt(periodIdx)]];
+  const t = filtered.reduce((a,m)=>({
+    revenue:a.revenue+m.revenue, cogs:a.cogs+m.cogs, gross:a.gross+m.gross,
+    opex:a.opex+m.opex, ebitda:a.ebitda+m.ebitda
+  }),{revenue:0,cogs:0,gross:0,opex:0,ebitda:0});
+
+  const title = periodIdx==='all' ? 'Income Statement (YTD 2025)' : `Income Statement (${months[parseInt(periodIdx)]} 2025)`;
+  document.getElementById('pl-title').textContent = title;
+
+  const lines = [
+    {label:"Net Revenue",val:t.revenue,bold:true,accent:false},
+    {label:"\u00A0\u00A0Cost of Goods Sold",val:-t.cogs,bold:false},
+    {label:"Gross Profit",val:t.gross,bold:true,accent:true},
+    {label:"\u00A0\u00A0Marketing & Ads",val:-(t.opex*0.38),bold:false},
+    {label:"\u00A0\u00A0Payroll & Contractors",val:-(t.opex*0.28),bold:false},
+    {label:"\u00A0\u00A0Amazon Fees",val:-(t.opex*0.18),bold:false},
+    {label:"\u00A0\u00A0Shipping & Fulfillment",val:-(t.opex*0.08),bold:false},
+    {label:"\u00A0\u00A0SaaS & Tools",val:-(t.opex*0.04),bold:false},
+    {label:"\u00A0\u00A0Other OpEx",val:-(t.opex*0.04),bold:false},
+    {label:"Total Operating Expenses",val:-t.opex,bold:true,accent:false},
+    {label:"EBITDA",val:t.ebitda,bold:true,accent:true},
+  ];
+
+  const tbl = document.getElementById('pl-table');
+  tbl.innerHTML = `<thead><tr><th>Line Item</th><th class="r">Amount</th><th class="r">% Rev</th></tr></thead><tbody>`
+    + lines.map(l => {
+      const pct = (l.val/t.revenue*100);
+      const cls = (l.bold?'pl-bold':'')+(l.accent?' pl-accent':'');
+      const valColor = l.val<0?'var(--red)':l.accent?'var(--accent)':'var(--text)';
+      const display = l.val<0 ? `(${fmt(Math.abs(l.val))})` : fmt(l.val);
+      const pctDisplay = pct<0 ? `(${Math.abs(pct).toFixed(1)}%)` : pct.toFixed(1)+'%';
+      return `<tr class="pl-row ${cls}">
+        <td>${l.label}</td>
+        <td class="r mono" style="color:${valColor}">${display}</td>
+        <td class="r mono" style="color:var(--muted)">${pctDisplay}</td>
+      </tr>`;
+    }).join('')
+    + '</tbody>';
+
+  // Waterfall chart
+  destroyChart('waterfall');
+  charts.waterfall = new Chart(document.getElementById('chartWaterfall'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label:'COGS', data: plData.map(d=>d.cogs), backgroundColor:'rgba(248,113,113,0.5)', stack:'s' },
+        { label:'OpEx', data: plData.map(d=>d.opex), backgroundColor:'rgba(251,146,60,0.5)', stack:'s' },
+        { label:'EBITDA', data: plData.map(d=>d.ebitda), backgroundColor:'rgba(74,222,128,0.6)', stack:'s', borderRadius:{topLeft:4,topRight:4} },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      scales: { y:{stacked:true,ticks:{callback:v=>fmt(v)},grid:{color:'#2a2e3d44'}}, x:{stacked:true,grid:{display:false}} },
+      plugins: { tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw)}} }
+    }
+  });
+}
+
+// ============================================================
+// RENDER: CASH FLOW
+// ============================================================
+function renderCashFlow() {
+  const cfKpis = [
+    {label:"Current Balance",value:"$482,300",sub:"+$38K vs last month"},
+    {label:"Avg Weekly Inflow",value:"$143,200",sub:"+12% MoM"},
+    {label:"Avg Weekly Outflow",value:"$108,500",sub:"+8% MoM"},
+    {label:"Runway (at burn rate)",value:"14.2 months",sub:"Comfortable"},
+  ];
+  document.getElementById('cf-kpis').innerHTML = cfKpis.map(c=>`<div class="card mini-kpi">
+    <div class="kpi-label">${c.label}</div>
+    <div class="kpi-value">${c.value}</div>
+    <div class="kpi-sub" style="color:var(--green)">${c.sub}</div>
+  </div>`).join('');
+
+  const weeks = Array.from({length:12},(_,i)=>'W'+(i+1));
+  const inflows = [128000,135000,142000,138000,151000,147000,155000,162000,158000,170000,168000,175000];
+  const outflows = [95000,98000,102000,100000,108000,105000,112000,118000,115000,122000,120000,128000];
+  const balance = []; let b = 280000; inflows.forEach((inf,i)=>{ b+=inf-outflows[i]; balance.push(b); });
+
+  destroyChart('cf');
+  charts.cf = new Chart(document.getElementById('chartCF'), {
+    type: 'bar',
+    data: {
+      labels: weeks,
+      datasets: [
+        { label:'Inflows', data: inflows, backgroundColor:'rgba(74,222,128,0.6)', borderRadius:4, order:2 },
+        { label:'Outflows', data: outflows.map(v=>-v), backgroundColor:'rgba(248,113,113,0.5)', borderRadius:4, order:2 },
+        { label:'Balance', data: balance, type:'line', borderColor:'#c8a97e', backgroundColor:'transparent', pointRadius:4, pointBackgroundColor:'#c8a97e', borderWidth:2.5, order:1, yAxisID:'y1' },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      scales: {
+        y:{ticks:{callback:v=>fmt(Math.abs(v))},grid:{color:'#2a2e3d44'}},
+        y1:{position:'right',ticks:{callback:v=>fmt(v)},grid:{display:false}},
+        x:{grid:{display:false}}
+      },
+      plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(Math.abs(ctx.raw))}}}
+    }
+  });
+
+  destroyChart('cfPie');
+  charts.cfPie = new Chart(document.getElementById('chartCFPie'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Inventory Purchase','Marketing','Payroll','Shipping/3PL','SaaS/Other'],
+      datasets: [{ data:[42,25,18,8,7], backgroundColor:['#c8a97e','#60a5fa','#a78bfa','#4ade80','#fb923c'], borderWidth:0 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'55%',
+      plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:ctx=>ctx.label+': '+ctx.raw+'%'}} }
+    }
+  });
+}
+
+// ============================================================
+// RENDER: CHANNELS
+// ============================================================
+function renderChannels(filter) {
+  const filtered = filter==='all' ? channelMetrics : channelMetrics.filter(c=>c.ch.toLowerCase().includes(filter));
+
+  document.getElementById('ch-cards').innerHTML = channelMetrics.map(c=>`<div class="card">
+    <div class="ch-header"><span class="ch-name">${c.ch}</span><span class="ch-growth">▲ ${c.growth}% YoY</span></div>
+    <div class="ch-value">${fmt(c.rev)}</div>
+    <div class="ch-meta">
+      <span>Margin: <b style="color:${marginColor(c.margin)}">${c.margin}%</b></span>
+      <span>AOV: <b style="color:var(--text)">$${c.aov}</b></span>
+    </div>
+    <div class="ch-bar"><div class="ch-bar-fill" style="width:${c.pct}%;background:${c.color}"></div></div>
+    <div class="ch-pct">${c.pct}% of total revenue</div>
+  </div>`).join('');
+
+  // Stacked bar
+  destroyChart('chBar');
+  charts.chBar = new Chart(document.getElementById('chartChBar'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label:'Amazon', data:monthlyRevenue.map(m=>m.amazon), backgroundColor:'rgba(96,165,250,0.7)', stack:'s' },
+        { label:'DTC', data:monthlyRevenue.map(m=>m.dtc), backgroundColor:'rgba(200,169,126,0.7)', stack:'s' },
+        { label:'Wholesale', data:monthlyRevenue.map(m=>m.wholesale), backgroundColor:'rgba(167,139,250,0.7)', stack:'s' },
+        { label:'Etsy', data:monthlyRevenue.map(m=>m.etsy), backgroundColor:'rgba(251,146,60,0.7)', stack:'s', borderRadius:{topLeft:4,topRight:4} },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      scales:{y:{stacked:true,ticks:{callback:v=>fmt(v)},grid:{color:'#2a2e3d44'}},x:{stacked:true,grid:{display:false}}},
+      plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw)}}}
+    }
+  });
+
+  // Table
+  document.getElementById('ch-table-wrap').innerHTML = `<table>
+    <thead><tr><th>Channel</th><th class="r">Revenue</th><th class="r">COGS</th><th class="r">Fees</th><th class="r">Ads</th><th class="r">Net Margin</th></tr></thead>
+    <tbody>${filtered.map(c=>`<tr>
+      <td>${c.ch}</td><td class="r mono">${fmt(c.rev)}</td><td class="r mono">(${fmt(c.cogs)})</td>
+      <td class="r mono">(${fmt(c.fees)})</td><td class="r mono">(${fmt(c.ads)})</td>
+      <td class="r" style="color:${marginColor(c.margin)};font-weight:600">${c.margin}%</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+// ============================================================
+// RENDER: PRODUCTS
+// ============================================================
+function renderProducts(cat) {
+  const filtered = cat==='all' ? productData : productData.filter(p=>p.category===cat);
+  const sorted = [...filtered].sort((a,b)=>b.revenue-a.revenue);
+
+  document.getElementById('prod-table-wrap').innerHTML = `<table>
+    <thead><tr><th>Product</th><th class="r">Units</th><th class="r">Revenue</th><th class="r">COGS</th><th class="r">GM%</th><th class="r">Contribution</th></tr></thead>
+    <tbody>${sorted.map(p=>`<tr>
+      <td>${p.name}</td><td class="r mono">${p.units.toLocaleString()}</td><td class="r mono">${fmt(p.revenue)}</td>
+      <td class="r mono">${fmt(p.cogs)}</td>
+      <td class="r" style="color:${p.margin>=68?'var(--green)':'var(--orange)'};font-weight:600">${p.margin}%</td>
+      <td class="r mono">${fmt(p.revenue-p.cogs)}</td>
+    </tr>`).join('')}</tbody></table>`;
+
+  // Top performers
+  const top5 = [...productData].sort((a,b)=>b.revenue-a.revenue).slice(0,5);
+  document.getElementById('top-performers').innerHTML = top5.map((p,i)=>`<div class="top-item">
+    <div style="display:flex;align-items:center;gap:10px"><span class="top-rank">#${i+1}</span><span class="top-name">${p.name}</span></div>
+    <span class="top-val">${fmt(p.revenue)}</span>
+  </div>`).join('');
+
+  // Pie
+  const cats = {};
+  productData.forEach(p=>{ cats[p.category] = (cats[p.category]||0)+p.revenue; });
+  destroyChart('prodPie');
+  charts.prodPie = new Chart(document.getElementById('chartProdPie'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(cats),
+      datasets: [{ data:Object.values(cats), backgroundColor:['#c8a97e','#60a5fa','#a78bfa','#4ade80','#fb923c','#22d3ee'], borderWidth:0 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'50%',
+      plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:ctx=>ctx.label+': '+fmt(ctx.raw)}} }
+    }
+  });
+}
+
+// ============================================================
+// RENDER: INVENTORY
+// ============================================================
+function renderInventory() {
+  const invKpis = [
+    {label:"Total Inventory Value",value:"$386,420",sub:"At avg cost"},
+    {label:"In Transit (from China)",value:"$148,200",sub:"ETA: 3-5 weeks"},
+    {label:"Avg Weeks of Supply",value:"6.0 wks",sub:"Target: 6-8 wks"},
+    {label:"Inventory Turnover",value:"8.2x",sub:"Annual, improving"},
+  ];
+  document.getElementById('inv-kpis').innerHTML = invKpis.map(c=>`<div class="card mini-kpi">
+    <div class="kpi-label">${c.label}</div><div class="kpi-value">${c.value}</div><div class="kpi-sub">${c.sub}</div>
+  </div>`).join('');
+
+  document.getElementById('inv-table-wrap').innerHTML = `<table>
+    <thead><tr><th>SKU</th><th>Product</th><th class="r">On Hand</th><th class="r">In Transit</th><th class="r">Reorder Pt</th><th class="r">Avg Cost</th><th class="r">Value</th><th class="r">Wks Supply</th><th style="text-align:center">Status</th></tr></thead>
+    <tbody>${inventoryData.map(r=>`<tr>
+      <td class="mono" style="color:var(--accent);font-weight:600">${r.sku}</td>
+      <td>${r.name}</td>
+      <td class="r mono">${r.onHand.toLocaleString()}</td>
+      <td class="r mono">${r.inTransit.toLocaleString()}</td>
+      <td class="r mono">${r.reorderPt.toLocaleString()}</td>
+      <td class="r mono">$${r.avgCost}</td>
+      <td class="r mono">${fmt(r.onHand*r.avgCost)}</td>
+      <td class="r mono">${r.weeks.toFixed(1)}</td>
+      <td style="text-align:center">${stockBadge(r.weeks)}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+// ============================================================
+// RENDER: INTERNATIONAL
+// ============================================================
+function renderInternational() {
+  document.getElementById('fx-table-wrap').innerHTML = `<table>
+    <thead><tr><th>Currency</th><th class="r">Exposure</th><th class="r">Spot Rate</th><th class="r">% Hedged</th><th class="r">FX P&L</th></tr></thead>
+    <tbody>${fxData.map(r=>`<tr>
+      <td style="font-weight:700;color:var(--accent)">${r.currency}</td>
+      <td class="r mono">${fmt(r.exposure)}</td>
+      <td class="r mono">${r.rate.toFixed(4)}</td>
+      <td class="r" style="color:${r.hedged>=60?'var(--green)':'var(--orange)'}">${r.hedged}%</td>
+      <td class="r mono" style="color:${r.pnl>=0?'var(--green)':'var(--red)'};font-weight:600">${r.pnl>=0?'+':''}${fmt(r.pnl)}</td>
+    </tr>`).join('')}</tbody></table>`;
+
+  destroyChart('geoPie');
+  charts.geoPie = new Chart(document.getElementById('chartGeoPie'), {
+    type: 'doughnut',
+    data: {
+      labels: ['USA','UK','Canada','Germany','EU (Other)','Rest of World'],
+      datasets: [{ data:[3680000,850000,420000,310000,280000,214000], backgroundColor:['#60a5fa','#c8a97e','#f87171','#a78bfa','#4ade80','#fb923c'], borderWidth:0 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'50%',
+      plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:ctx=>ctx.label+': '+fmt(ctx.raw)}} }
+    }
+  });
+
+  document.getElementById('vat-table-wrap').innerHTML = `<table>
+    <thead><tr><th>Jurisdiction</th><th class="r">Collected</th><th class="r">Remitted</th><th class="r">Balance Due</th><th style="text-align:center">Next Filing</th><th style="text-align:center">Status</th></tr></thead>
+    <tbody>${vatData.map(r=>`<tr>
+      <td>${r.jurisdiction}</td>
+      <td class="r mono">${fmt(r.collected)}</td>
+      <td class="r mono">${fmt(r.remitted)}</td>
+      <td class="r mono" style="color:var(--orange);font-weight:600">${fmt(r.due)}</td>
+      <td style="text-align:center" class="mono">${r.nextFiling}</td>
+      <td style="text-align:center">${statusBadge(r.status)}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+// ============================================================
+// FILTERS PER TAB
+// ============================================================
+const filterDefs = {
+  pl: `<span class="filter-label">Period:</span>
+    <select class="filter-select" id="filter-period" onchange="renderPL(this.value)">
+      <option value="all">YTD (Full Year)</option>
+      ${months.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}
+    </select>`,
+  channels: `<span class="filter-label">Channel:</span>
+    <select class="filter-select" id="filter-channel" onchange="renderChannels(this.value)">
+      <option value="all">All Channels</option>
+      <option value="amazon">Amazon</option>
+      <option value="dtc">DTC (Shopify)</option>
+      <option value="wholesale">Wholesale</option>
+      <option value="etsy">Etsy</option>
+    </select>`,
+  products: `<span class="filter-label">Category:</span>
+    <select class="filter-select" id="filter-category" onchange="renderProducts(this.value)">
+      <option value="all">All Categories</option>
+      <option value="Watches">Watch Organizers</option>
+      <option value="Knives">Knife Displays</option>
+      <option value="Combo">Combo Decks</option>
+      <option value="Coins">Coin Storage</option>
+      <option value="Lifestyle">Lifestyle</option>
+      <option value="Jewelry">Jewelry</option>
+      <option value="Other">Accessories</option>
+    </select>`,
+};
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+let currentTab = 'overview';
+function switchTab(tabId) {
+  currentTab = tabId;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tabId));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+tabId));
+  document.getElementById('filters').innerHTML = filterDefs[tabId] || '';
+
+  // Render content for tab (charts need canvas to be visible)
+  setTimeout(()=>{
+    switch(tabId) {
+      case 'overview': renderOverviewCharts(); break;
+      case 'pl': renderPL('all'); break;
+      case 'cashflow': renderCashFlow(); break;
+      case 'channels': renderChannels('all'); break;
+      case 'products': renderProducts('all'); break;
+      case 'inventory': renderInventory(); break;
+      case 'international': renderInternational(); break;
+    }
+  }, 50);
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
+});
+
+// ============================================================
+// INIT
+// ============================================================
+renderKPIGrid();
+renderOverviewCharts();
+</script>
+</body>
+</html>
