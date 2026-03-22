@@ -3,821 +3,1159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Holme & Hadfield · Financial Controller Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>PTI Treasury Dashboard — Manager, Colombia · Luis F. Suárez</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #0f1117;
-  --card: #1a1d27;
-  --card-hover: #222633;
-  --border: #2a2e3d;
-  --text: #e4e4e7;
-  --muted: #8b8fa3;
-  --accent: #c8a97e;
-  --accent-light: #e0c9a6;
-  --green: #4ade80;
-  --green-bg: rgba(74,222,128,0.1);
-  --red: #f87171;
-  --red-bg: rgba(248,113,113,0.1);
-  --blue: #60a5fa;
-  --purple: #a78bfa;
-  --orange: #fb923c;
-  --cyan: #22d3ee;
-}
+  :root {
+    --bg: #0b0e1a;
+    --bg2: #111627;
+    --bg3: #161d32;
+    --card: #1a2238;
+    --card2: #1f2a42;
+    --border: #263354;
+    --border2: #2e3d60;
+    --gold: #f0b429;
+    --gold2: #ffd166;
+    --teal: #06d6a0;
+    --blue: #4895ef;
+    --red: #ef4444;
+    --orange: #f97316;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --text: #e8edf5;
+    --text2: #9ab0cc;
+    --text3: #5a7399;
+    --green: #22c55e;
+    --kyriba: #1a8cff;
+    --d365: #00a4ef;
+    --font-mono: 'Space Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
+    --font-num: 'DM Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-body); font-size:13px; min-height:100vh; overflow-x:hidden; }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 'Segoe UI', sans-serif; min-height: 100vh; }
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  /* HEADER */
+  .header { background:linear-gradient(135deg,var(--bg3) 0%,#0d1529 100%); border-bottom:1px solid var(--border); padding:12px 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+  .header-left { display:flex; align-items:center; gap:16px; }
+  .logo { background:var(--gold); color:#000; font-family:var(--font-mono); font-size:11px; font-weight:700; padding:5px 10px; letter-spacing:2px; }
+  .header-title { font-size:14px; font-weight:600; color:var(--text); letter-spacing:0.5px; }
+  .header-sub { font-size:11px; color:var(--text3); font-family:var(--font-num); }
+  .header-right { display:flex; align-items:center; gap:14px; }
+  .src-badge { display:flex; align-items:center; gap:5px; border:1px solid var(--border); border-radius:12px; padding:3px 9px; font-size:9px; font-family:var(--font-mono); letter-spacing:1px; }
+  .src-badge.kyriba { background:rgba(26,140,255,0.1); color:var(--kyriba); border-color:rgba(26,140,255,0.3); }
+  .src-badge.d365 { background:rgba(0,164,239,0.1); color:var(--d365); border-color:rgba(0,164,239,0.3); }
+  .src-dot { width:5px; height:5px; border-radius:50%; animation:pulse 2s infinite; }
+  .src-dot.k { background:var(--kyriba); }
+  .src-dot.d { background:var(--d365); }
+  .live-badge { display:flex; align-items:center; gap:6px; background:rgba(6,214,160,0.1); border:1px solid rgba(6,214,160,0.3); padding:4px 10px; border-radius:20px; font-size:10px; font-family:var(--font-mono); color:var(--teal); letter-spacing:1px; }
+  .live-dot { width:6px; height:6px; border-radius:50%; background:var(--teal); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .header-time { font-family:var(--font-mono); font-size:12px; color:var(--gold); }
+  .user-badge { background:var(--card2); border:1px solid var(--border); padding:5px 12px; border-radius:4px; font-size:11px; color:var(--text2); }
 
-/* HEADER */
-.header {
-  background: var(--card); border-bottom: 1px solid var(--border);
-  padding: 14px 28px; display: flex; justify-content: space-between; align-items: center;
-  position: sticky; top: 0; z-index: 100;
-}
-.logo-group { display: flex; align-items: center; gap: 12px; }
-.logo-icon {
-  width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, var(--accent), var(--accent-light));
-  color: var(--bg); font-weight: 800; font-size: 13px; letter-spacing: -0.5px;
-}
-.logo-text h1 { font-size: 15px; font-weight: 700; letter-spacing: 1px; color: var(--text); }
-.logo-text span { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
-.header-right { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--muted); }
-.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); display: inline-block; }
+  /* SOURCE TAG (inline) */
+  .stag { display:inline-flex; align-items:center; gap:3px; font-size:8px; font-family:var(--font-mono); padding:1px 5px; border-radius:3px; vertical-align:middle; margin-left:4px; }
+  .stag-k { background:rgba(26,140,255,0.12); color:var(--kyriba); border:1px solid rgba(26,140,255,0.25); }
+  .stag-d { background:rgba(0,164,239,0.12); color:var(--d365); border:1px solid rgba(0,164,239,0.25); }
+  .stag-kd { background:rgba(100,180,255,0.08); color:#7cc4ff; border:1px solid rgba(100,180,255,0.2); }
 
-/* NAV */
-.nav-bar {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 28px; border-bottom: 1px solid var(--border);
-  background: rgba(26,29,39,0.85); backdrop-filter: blur(10px);
-  position: sticky; top: 58px; z-index: 99;
-}
-.tabs { display: flex; gap: 4px; }
-.tab-btn {
-  background: transparent; color: var(--muted); border: none; border-radius: 8px;
-  padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 500;
-  font-family: inherit; transition: all 0.2s;
-}
-.tab-btn:hover { color: var(--text); }
-.tab-btn.active { background: var(--accent); color: var(--bg); font-weight: 700; }
-.filters { display: flex; gap: 12px; align-items: center; }
-.filter-label { color: var(--muted); font-size: 12px; }
-.filter-select {
-  background: var(--card); color: var(--text); border: 1px solid var(--border);
-  border-radius: 8px; padding: 6px 30px 6px 12px; font-size: 13px; font-family: inherit;
-  outline: none; cursor: pointer; appearance: none; -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b8fa3' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 10px center;
-}
+  /* TABS */
+  .tab-bar { background:var(--bg2); border-bottom:1px solid var(--border); display:flex; overflow-x:auto; padding:0 24px; scrollbar-width:none; }
+  .tab-bar::-webkit-scrollbar { display:none; }
+  .tab { padding:12px 18px; font-size:11px; font-weight:600; color:var(--text3); cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; transition:all 0.2s; letter-spacing:0.5px; text-transform:uppercase; display:flex; align-items:center; gap:6px; }
+  .tab:hover { color:var(--text2); }
+  .tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+  .tab-badge { background:var(--red); color:#fff; font-size:9px; padding:1px 5px; border-radius:10px; font-family:var(--font-mono); }
+  .tab-badge.green { background:var(--teal); color:#000; }
+  .tab-badge.orange { background:var(--orange); }
 
-/* LAYOUT */
-.content { padding: 24px 28px; max-width: 1420px; margin: 0 auto; }
-.tab-panel { display: none; }
-.tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  /* PANELS */
+  .panel { display:none; padding:20px 24px; animation:fadeIn 0.25s ease; }
+  .panel.active { display:block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
 
-/* GRID */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.grid-kpi { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
-.grid-14 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
-.grid-21 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
-.gap { margin-bottom: 16px; }
-@media (max-width: 900px) {
-  .grid-2, .grid-3, .grid-4, .grid-14, .grid-21 { grid-template-columns: 1fr; }
-}
+  /* GRID */
+  .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+  .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+  .grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:16px; }
+  .grid-2-1 { display:grid; grid-template-columns:2fr 1fr; gap:12px; margin-bottom:16px; }
 
-/* CARD */
-.card {
-  background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px;
-}
-.card h3 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 16px; letter-spacing: 0.2px; }
+  /* CARDS */
+  .card { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:16px; position:relative; transition:border-color 0.2s; }
+  .card:hover { border-color:var(--border2); }
+  .card-label { font-size:10px; font-weight:700; letter-spacing:1.5px; color:var(--text3); text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .card-value { font-family:var(--font-mono); font-size:22px; font-weight:700; color:var(--text); line-height:1; margin-bottom:4px; }
+  .card-value.green { color:var(--teal); }
+  .card-value.red { color:var(--red); }
+  .card-value.gold { color:var(--gold); }
+  .card-value.blue { color:var(--blue); }
+  .card-value.orange { color:var(--orange); }
+  .card-sub { font-size:10px; color:var(--text3); font-family:var(--font-num); }
+  .card-delta { font-size:10px; font-family:var(--font-num); display:flex; align-items:center; gap:3px; margin-top:4px; }
+  .card-delta.up { color:var(--teal); }
+  .card-delta.down { color:var(--red); }
+  .card-delta.neutral { color:var(--text3); }
+  .card-delta.warn { color:var(--orange); }
 
-/* KPI CARD */
-.kpi-value { font-size: 28px; font-weight: 700; color: var(--text); margin: 6px 0; font-family: 'DM Sans', sans-serif; }
-.kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-.kpi-badge {
-  display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
-}
-.kpi-badge.up { color: var(--green); background: var(--green-bg); }
-.kpi-badge.down { color: var(--red); background: var(--red-bg); }
-.kpi-target { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin: 8px 0 4px; }
-.progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+  /* SECTION HEADER */
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .section-title { font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text2); display:flex; align-items:center; gap:8px; }
+  .section-title::before { content:''; width:3px; height:14px; background:var(--gold); border-radius:2px; }
+  .section-actions { display:flex; gap:8px; }
+  .btn { padding:5px 12px; border-radius:4px; font-size:10px; font-weight:600; letter-spacing:0.5px; cursor:pointer; border:1px solid var(--border2); background:var(--card2); color:var(--text2); transition:all 0.2s; font-family:var(--font-body); }
+  .btn:hover { border-color:var(--gold); color:var(--gold); }
+  .btn.primary { background:var(--gold); color:#000; border-color:var(--gold); }
+  .btn.primary:hover { background:var(--gold2); }
+  .btn.danger { background:rgba(239,68,68,0.1); color:var(--red); border-color:rgba(239,68,68,0.3); }
+  .btn.success { background:rgba(6,214,160,0.1); color:var(--teal); border-color:rgba(6,214,160,0.3); }
 
-/* TABLE */
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
-th {
-  padding: 10px 14px; text-align: left; color: var(--muted); font-weight: 600;
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
-  border-bottom: 1px solid var(--border); white-space: nowrap; position: sticky; top: 0; background: var(--card);
-}
-td { padding: 10px 14px; color: var(--text); border-bottom: 1px solid rgba(42,46,61,0.3); white-space: nowrap; }
-tr:hover td { background: var(--card-hover); }
-th.r, td.r { text-align: right; }
-td.mono { font-family: 'DM Mono', monospace; }
+  /* TABLE */
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; }
+  thead th { padding:8px 12px; text-align:left; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text3); border-bottom:1px solid var(--border); background:var(--bg3); }
+  tbody tr { border-bottom:1px solid rgba(38,51,84,0.5); transition:background 0.15s; }
+  tbody tr:hover { background:rgba(255,255,255,0.02); }
+  tbody td { padding:9px 12px; font-size:12px; color:var(--text); }
+  .td-mono { font-family:var(--font-num); }
+  .td-green { color:var(--teal) !important; }
+  .td-red { color:var(--red) !important; }
+  .td-gold { color:var(--gold) !important; }
+  .td-orange { color:var(--orange) !important; }
+  .td-blue { color:var(--blue) !important; }
+  .td-purple { color:var(--purple) !important; }
+  .td-dim { color:var(--text3) !important; font-size:11px; }
 
-/* BADGES */
-.badge {
-  display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
-}
-.badge-green { color: var(--green); background: rgba(74,222,128,0.12); }
-.badge-orange { color: var(--orange); background: rgba(251,146,60,0.12); }
-.badge-red { color: var(--red); background: rgba(248,113,113,0.12); }
+  /* STATUS PILLS */
+  .pill { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; }
+  .pill-green { background:rgba(34,197,94,0.12); color:var(--green); border:1px solid rgba(34,197,94,0.25); }
+  .pill-red { background:rgba(239,68,68,0.12); color:var(--red); border:1px solid rgba(239,68,68,0.25); }
+  .pill-yellow { background:rgba(240,180,41,0.12); color:var(--gold); border:1px solid rgba(240,180,41,0.25); }
+  .pill-blue { background:rgba(72,149,239,0.12); color:var(--blue); border:1px solid rgba(72,149,239,0.25); }
+  .pill-orange { background:rgba(249,115,22,0.12); color:var(--orange); border:1px solid rgba(249,115,22,0.25); }
+  .pill-purple { background:rgba(167,139,250,0.12); color:var(--purple); border:1px solid rgba(167,139,250,0.25); }
 
-/* CHART CANVAS */
-.chart-container { position: relative; width: 100%; }
+  /* TOOLTIP — the study system */
+  [data-tooltip] { position:relative; cursor:help; }
+  [data-tooltip]::before { content:'?'; display:inline-flex; align-items:center; justify-content:center; width:13px; height:13px; border-radius:50%; background:rgba(240,180,41,0.2); border:1px solid rgba(240,180,41,0.4); color:var(--gold); font-size:8px; font-weight:700; margin-left:4px; font-style:normal; }
+  [data-tooltip]::after { content:attr(data-tooltip); position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#0d1529; border:1px solid var(--gold); color:var(--text); padding:10px 14px; border-radius:6px; font-size:11px; font-family:var(--font-body); font-weight:400; line-height:1.5; white-space:normal; width:280px; z-index:9999; pointer-events:none; opacity:0; transition:opacity 0.2s; box-shadow:0 8px 24px rgba(0,0,0,0.5); text-transform:none; letter-spacing:0; }
+  [data-tooltip]:hover::after { opacity:1; }
 
-/* ALERT BOX */
-.alert-box {
-  margin-top: 14px; padding: 12px 16px; border-radius: 8px;
-  background: rgba(200,169,126,0.08); border: 1px solid rgba(200,169,126,0.25);
-  font-size: 12px; color: var(--accent); font-weight: 500; line-height: 1.5;
-}
+  /* PROGRESS */
+  .progress-wrap { margin-top:8px; }
+  .progress-bar { height:4px; background:var(--bg); border-radius:2px; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:2px; transition:width 0.3s; }
+  .progress-labels { display:flex; justify-content:space-between; font-size:9px; color:var(--text3); margin-top:3px; font-family:var(--font-num); }
+  /* Enhanced covenant bar */
+  .cov-bar-h8 { height:8px; background:var(--bg); border-radius:4px; overflow:hidden; margin:4px 0; }
+  .cov-fill-h8 { height:100%; border-radius:4px; }
 
-/* P&L TABLE */
-.pl-row { transition: background 0.15s; }
-.pl-row:hover { background: var(--card-hover); }
-.pl-bold td { font-weight: 700; border-top: 1px solid var(--border); }
-.pl-accent td:first-child { color: var(--accent); }
+  /* ALERT BANNER */
+  .alert { padding:10px 14px; border-radius:4px; margin-bottom:12px; font-size:11px; display:flex; align-items:flex-start; gap:10px; }
+  .alert-icon { font-size:14px; flex-shrink:0; margin-top:1px; }
+  .alert.warning { background:rgba(249,115,22,0.1); border-left:3px solid var(--orange); }
+  .alert.danger { background:rgba(239,68,68,0.1); border-left:3px solid var(--red); }
+  .alert.success { background:rgba(6,214,160,0.1); border-left:3px solid var(--teal); }
+  .alert.info { background:rgba(72,149,239,0.1); border-left:3px solid var(--blue); }
+  .alert-title { font-weight:700; color:var(--text); margin-bottom:2px; }
+  .alert-body { color:var(--text2); }
 
-/* TOP PERFORMERS */
-.top-item {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 9px 0; border-bottom: 1px solid rgba(42,46,61,0.2);
-}
-.top-item:last-child { border-bottom: none; }
-.top-rank { color: var(--accent); font-size: 16px; font-weight: 700; width: 28px; font-family: 'DM Mono', monospace; }
-.top-name { font-size: 13px; color: var(--text); }
-.top-val { font-size: 13px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  /* SCROLLABLE */
+  .card-scroll { max-height:380px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+  .card-scroll::-webkit-scrollbar { width:4px; }
+  .card-scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 
-/* MINI KPI */
-.mini-kpi .kpi-label { font-size: 11px; }
-.mini-kpi .kpi-value { font-size: 22px; margin: 4px 0 2px; }
-.mini-kpi .kpi-sub { font-size: 12px; color: var(--muted); }
-.mini-kpi .kpi-sub b { color: var(--green); }
+  /* COUNTRY ROW */
+  .country-row { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-bottom:1px solid rgba(38,51,84,0.3); transition:background 0.15s; border-radius:3px; }
+  .country-row:hover { background:rgba(255,255,255,0.02); }
+  .country-flag { font-size:16px; margin-right:8px; }
+  .country-name { font-size:12px; font-weight:600; }
+  .country-ccy { font-size:10px; color:var(--text3); font-family:var(--font-num); }
+  .country-balance { font-family:var(--font-mono); font-size:12px; text-align:right; }
+  .country-status { width:6px; height:6px; border-radius:50%; margin-left:8px; }
 
-/* FOOTER */
-.footer {
-  padding: 14px 28px; border-top: 1px solid var(--border);
-  display: flex; justify-content: space-between; font-size: 11px; color: var(--muted);
-}
+  /* TIMELINE */
+  .tl-wrap { display:flex; flex-direction:column; gap:0; }
+  .tl-item { display:grid; grid-template-columns:36px 70px 1fr; gap:10px; align-items:start; padding:10px 0; border-bottom:1px solid rgba(38,51,84,0.3); }
+  .tl-dot { width:10px; height:10px; border-radius:50%; margin-top:2px; border:2px solid var(--border2); }
+  .tl-dot.done { background:var(--teal); border-color:var(--teal); }
+  .tl-dot.active { background:var(--gold); border-color:var(--gold); animation:pulse 1.5s infinite; }
+  .tl-dot.pending { background:var(--text3); border-color:var(--text3); }
+  .tl-time { font-family:var(--font-mono); font-size:10px; color:var(--text3); margin-bottom:2px; }
+  .tl-title { font-size:12px; font-weight:600; color:var(--text); }
+  .tl-desc { font-size:10px; color:var(--text3); margin-top:2px; }
 
-/* Channel card */
-.ch-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.ch-name { color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-.ch-growth { color: var(--green); font-size: 12px; font-weight: 600; }
-.ch-value { font-size: 24px; font-weight: 700; color: var(--text); font-family: 'DM Sans', sans-serif; }
-.ch-meta { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: var(--muted); }
-.ch-bar { margin-top: 8px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.ch-bar-fill { height: 100%; border-radius: 2px; }
-.ch-pct { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  /* FORECAST BARS */
+  .forecast-week { display:grid; grid-template-columns:90px 1fr 80px; align-items:center; gap:8px; margin-bottom:5px; }
+  .forecast-label { font-size:10px; color:var(--text3); font-family:var(--font-num); }
+  .forecast-bar-bg { height:14px; background:var(--bg); border-radius:2px; overflow:hidden; }
+  .forecast-bar-fill { height:100%; border-radius:2px; display:flex; align-items:center; padding-left:4px; font-size:9px; font-weight:700; }
+  .forecast-val { font-family:var(--font-mono); font-size:10px; text-align:right; }
+
+  /* SUB LABEL */
+  .sub-label { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text3); margin-bottom:6px; margin-top:14px; }
+
+  /* RESPONSIVE */
+  @media(max-width:1200px) { .grid-4{grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:768px) { .grid-4,.grid-3,.grid-2,.grid-2-1{grid-template-columns:1fr;} .tab{padding:10px 12px;font-size:9px;} }
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
-<div class="header">
-  <div class="logo-group">
-    <div class="logo-icon">H&H</div>
-    <div class="logo-text">
-      <h1>HOLME & HADFIELD</h1>
-      <span>Financial Controller Dashboard</span>
+<header class="header">
+  <div class="header-left">
+    <div class="logo">PTI</div>
+    <div>
+      <div class="header-title">Treasury Intelligence Dashboard</div>
+      <div class="header-sub">Manager, Treasury — Colombia Operations · Luis F. Suárez Velandia</div>
     </div>
   </div>
   <div class="header-right">
-    <span>FY 2025 · Updated: Mar 03, 2026</span>
-    <span class="sync-dot"></span>
-    <span style="color:var(--green);font-weight:600;">QuickBooks Synced</span>
+    <div class="src-badge kyriba"><div class="src-dot k"></div>KYRIBA</div>
+    <div class="src-badge d365"><div class="src-dot d"></div>D365 FINANCE</div>
+    <div class="live-badge"><div class="live-dot"></div>LIVE DATA</div>
+    <div class="header-time" id="clock">--:--:-- EST</div>
+    <div class="user-badge">Bogotá · COL (UTC-5)</div>
   </div>
+</header>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <div class="tab active" onclick="showTab('cash',this)">📊 Cash Positioning</div>
+  <div class="tab" onclick="showTab('fx',this)">💱 FX & Risk</div>
+  <div class="tab" onclick="showTab('payments',this)">💳 Payments Hub <span class="tab-badge">7</span></div>
+  <div class="tab" onclick="showTab('covenants',this)">⚖️ Covenants <span class="tab-badge orange">2</span></div>
+  <div class="tab" onclick="showTab('intercompany',this)">🔗 Intercompany Loans</div>
+  <div class="tab" onclick="showTab('forecast',this)">📈 13-Week Forecast</div>
+  <div class="tab" onclick="showTab('banking',this)">🏦 Banking Ops</div>
+  <div class="tab" onclick="showTab('daily',this)">☀️ Daily Workflow</div>
 </div>
 
-<!-- NAV -->
-<div class="nav-bar">
-  <div class="tabs" id="tabs">
-    <button class="tab-btn active" data-tab="overview">KPI Overview</button>
-    <button class="tab-btn" data-tab="pl">P&L</button>
-    <button class="tab-btn" data-tab="cashflow">Cash Flow</button>
-    <button class="tab-btn" data-tab="channels">Channels</button>
-    <button class="tab-btn" data-tab="products">Products</button>
-    <button class="tab-btn" data-tab="inventory">Inventory</button>
-    <button class="tab-btn" data-tab="international">International</button>
-  </div>
-  <div class="filters" id="filters"></div>
-</div>
+<!-- ═══════════════════ TAB 1: CASH POSITIONING ═══════════════════ -->
+<div id="tab-cash" class="panel active">
 
-<!-- CONTENT -->
-<div class="content">
-
-<!-- ========== TAB: OVERVIEW ========== -->
-<div class="tab-panel active" id="panel-overview">
-  <div class="grid-kpi gap" id="kpi-grid"></div>
-  <div class="grid-2">
-    <div class="card"><h3>Monthly Revenue Trend (FY 2025)</h3><div class="chart-container" style="height:290px"><canvas id="chartRevTrend"></canvas></div></div>
-    <div class="card"><h3>EBITDA vs Gross Profit</h3><div class="chart-container" style="height:290px"><canvas id="chartEbitda"></canvas></div></div>
-  </div>
-</div>
-
-<!-- ========== TAB: P&L ========== -->
-<div class="tab-panel" id="panel-pl">
-  <div class="grid-2">
-    <div class="card">
-      <h3 id="pl-title">Income Statement (YTD 2025)</h3>
-      <div class="table-wrap"><table id="pl-table"></table></div>
-    </div>
-    <div class="card"><h3>Monthly Margin Waterfall</h3><div class="chart-container" style="height:370px"><canvas id="chartWaterfall"></canvas></div></div>
-  </div>
-</div>
-
-<!-- ========== TAB: CASH FLOW ========== -->
-<div class="tab-panel" id="panel-cashflow">
-  <div class="grid-4 gap" id="cf-kpis"></div>
-  <div class="grid-21">
-    <div class="card"><h3>12-Week Cash Flow Forecast</h3><div class="chart-container" style="height:310px"><canvas id="chartCF"></canvas></div></div>
-    <div class="card"><h3>Cash Allocation</h3><div class="chart-container" style="height:310px"><canvas id="chartCFPie"></canvas></div></div>
-  </div>
-</div>
-
-<!-- ========== TAB: CHANNELS ========== -->
-<div class="tab-panel" id="panel-channels">
-  <div class="grid-4 gap" id="ch-cards"></div>
-  <div class="grid-2">
-    <div class="card"><h3>Revenue by Channel (Monthly)</h3><div class="chart-container" style="height:310px"><canvas id="chartChBar"></canvas></div></div>
-    <div class="card"><h3>Channel P&L Breakdown</h3><div class="table-wrap" id="ch-table-wrap"></div></div>
-  </div>
-</div>
-
-<!-- ========== TAB: PRODUCTS ========== -->
-<div class="tab-panel" id="panel-products">
-  <div class="grid-14">
-    <div class="card"><h3>Product Unit Economics</h3><div class="table-wrap" style="max-height:440px;overflow-y:auto" id="prod-table-wrap"></div></div>
+  <div class="alert info">
+    <div class="alert-icon">ℹ️</div>
     <div>
-      <div class="card gap"><h3>Revenue by Category</h3><div class="chart-container" style="height:250px"><canvas id="chartProdPie"></canvas></div></div>
-      <div class="card"><h3>Top Performers</h3><div id="top-performers"></div></div>
+      <div class="alert-title">Morning Brief — Monday, March 9, 2026 · 07:14 EST</div>
+      <div class="alert-body">3 markets pending MT940 import (Ecuador SRI cut-off). Bolivia BOB: USD scarcity alert active. Chile CLP: elevated volatility post-WOM restructuring. All other positions reconciled. <span class="stag stag-k">KYRIBA</span></div>
     </div>
   </div>
-</div>
 
-<!-- ========== TAB: INVENTORY ========== -->
-<div class="tab-panel" id="panel-inventory">
-  <div class="grid-4 gap" id="inv-kpis"></div>
-  <div class="card"><h3>Inventory Status by SKU</h3><div class="table-wrap" id="inv-table-wrap"></div></div>
-</div>
+  <div class="grid-4">
+    <div class="card" data-tooltip="GLOBAL CASH POSITION: Total cash available across all PTI bank accounts, consolidated in USD. This is the most critical figure to report every morning to the Director of Treasury in Florida before 9am EST. Source: Kyriba Cash Management — MT940 bank statements.">
+      <div class="card-label">Total Global Cash (USD) <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value gold">$142.7M</div>
+      <div class="card-sub">Across 25 markets · 47 accounts</div>
+      <div class="card-delta up">▲ +$3.2M vs yesterday</div>
+    </div>
+    <div class="card" data-tooltip="LATAM CASH: Cash available exclusively in the Latin American countries managed directly: Colombia, Ecuador, Chile, Peru, Bolivia, Mexico, Argentina. Daily operational balance by region. Source: Kyriba by legal entity.">
+      <div class="card-label">LATAM Cash (USD equiv.) <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value blue">$58.4M</div>
+      <div class="card-sub">7 markets · COP/CLP/PEN/BOB/MXN</div>
+      <div class="card-delta neutral">→ Flat vs prior week</div>
+    </div>
+    <div class="card" data-tooltip="TRAPPED CASH: Cash that CANNOT be freely repatriated to the US parent. Bolivia: dollar shortage crisis, reserves $153M (Aug 2024), official rate BOB 6.96 but parallel market premium >95%. Argentina: partial FX controls. Monitor and report this balance monthly.">
+      <div class="card-label">Trapped Cash <span style="font-size:9px;color:var(--red)">⚠ RESTRICTED</span> <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value red">$8.9M</div>
+      <div class="card-sub">Bolivia $6.1M · Argentina $2.8M</div>
+      <div class="card-delta down">▼ Cannot repatriate — USD controls</div>
+    </div>
+    <div class="card" data-tooltip="DAYS CASH ON HAND: How many days PTI can operate with current cash without additional inflows. Formula: Total Cash ÷ (Annual Expenses ÷ 365). Target: 60–90 days. At 74 days — green zone. Source: K+D365.">
+      <div class="card-label">Days Cash on Hand <span class="stag stag-kd">K+D365</span></div>
+      <div class="card-value green">74d</div>
+      <div class="card-sub">Target: 60-90 days · In range</div>
+      <div class="card-delta up">▲ Min. required: 30d</div>
+    </div>
+  </div>
 
-<!-- ========== TAB: INTERNATIONAL ========== -->
-<div class="tab-panel" id="panel-international">
-  <div class="grid-2 gap">
+  <div class="grid-2">
+    <!-- LATAM Market Positions -->
     <div class="card">
-      <h3>FX Exposure & Hedging</h3>
-      <div class="table-wrap" id="fx-table-wrap"></div>
-      <div class="alert-box">⚠ CNY exposure is the largest unhedged risk. Recommend increasing hedge ratio to 80%+ given upcoming PO cycle with Chinese manufacturers.</div>
+      <div class="section-header">
+        <div class="section-title">LATAM Market Positions <span class="stag stag-k">KYRIBA</span></div>
+        <div class="section-actions">
+          <button class="btn">Export CSV</button>
+          <button class="btn primary">+ Add Account</button>
+        </div>
+      </div>
+      <div class="card-scroll">
+        <div class="country-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇨🇴</span>
+            <div>
+              <div class="country-name" data-tooltip="COLOMBIA: ~1,800+ towers. Tenants: Claro Colombia, Movistar Colombia. Main banks: Bancolombia, BBVA, Itaú. Payment system: ACH CENIT (D+1). E-invoicing: DIAN (UBL v2.1 format). Thin cap: 3:1 debt/equity (Art. 118-1 ET). VAT: 19%. ICA: 0.4–1%. WHT on interest: 15%.">Colombia</div>
+              <div class="country-ccy">COP · Bancolombia · BBVA · Itaú</div>
+            </div>
+          </div>
+          <div><div class="country-balance td-green">$12,340,000</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-num)">COP 45.9B equiv.</div></div>
+          <div class="country-status" style="background:var(--green)"></div>
+        </div>
+        <div class="country-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇨🇱</span>
+            <div>
+              <div class="country-name" data-tooltip="CHILE: ~3,800 towers (acquired from WOM). Largest PTI market in LATAM. WOM filed Chapter 11 Apr 2024, emerged Mar 2025 with $500M injection — ongoing CLP volatility. Banks: Santander Chile, Itaú Chile, BCI. Payment system: TEF. Thin cap: 3:1. VAT: 19%.">Chile ⚠</div>
+              <div class="country-ccy">CLP · Santander · Itaú Chile · BCI</div>
+            </div>
+          </div>
+          <div><div class="country-balance td-gold">$18,720,000</div><div style="font-size:9px;color:var(--gold);font-family:var(--font-num)">CLP 17.6B · WOM watch</div></div>
+          <div class="country-status" style="background:var(--gold)"></div>
+        </div>
+        <div class="country-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇪🇨</span>
+            <div>
+              <div class="country-name" data-tooltip="ECUADOR: 1,408 towers (acquired from Telefónica for €202M, 2019). DOLLARIZED country — no FX risk, all operations in USD. Payment system: SPI (Central Bank of Ecuador, 1pm cutoff). E-invoicing: SRI. VAT: 12%. WHT on interest: 22%.">Ecuador</div>
+              <div class="country-ccy">USD · Banco Pacífico · Guayaquil</div>
+            </div>
+          </div>
+          <div><div class="country-balance td-green">$7,850,000</div><div style="font-size:9px;color:var(--teal);font-family:var(--font-num)">Fully USD — No FX risk</div></div>
+          <div class="country-status" style="background:var(--green)"></div>
+        </div>
+        <div class="country-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇵🇪</span>
+            <div>
+              <div class="country-name" data-tooltip="PERU: ~365 towers. PEN (sol) is convertible with an active NDF market. System: LBTR (Central Bank). Banks: BBVA Peru, Scotiabank Peru. E-invoicing: SUNAT (OSE/PSE model). VAT: 18%. Detraction system on services. Thin cap: 3:1. WHT: 15%.">Perú</div>
+              <div class="country-ccy">PEN · BBVA Perú · Scotiabank</div>
+            </div>
+          </div>
+          <div><div class="country-balance">$4,210,000</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-num)">PEN 14.2M equiv.</div></div>
+          <div class="country-status" style="background:var(--green)"></div>
+        </div>
+        <div class="country-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇲🇽</span>
+            <div>
+              <div class="country-name" data-tooltip="MEXICO: Growing operations. MXN. Payment system: SPEI (real-time 24/7 — key operational advantage). Banks: BBVA Mexico, Banamex. E-invoicing: CFDI 4.0 via SAT (v4.0 requires postal code and tax regime of recipient). Thin cap: 3:1. WHT on interest: 10%.">México</div>
+              <div class="country-ccy">MXN · BBVA MX · Santander MX</div>
+            </div>
+          </div>
+          <div><div class="country-balance">$6,480,000</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-num)">MXN 118.8M equiv.</div></div>
+          <div class="country-status" style="background:var(--green)"></div>
+        </div>
+        <div class="country-row" style="background:rgba(239,68,68,0.04)">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇧🇴</span>
+            <div>
+              <div class="country-name" data-tooltip="BOLIVIA ⚠ CRITICAL: ~600 towers. Official rate BOB 6.96/USD since 2011 but DOLLAR SHORTAGE CRISIS. International reserves collapsed from $15B (2014) to $153M (Aug 2024). Parallel market premium >95%. USD transfer limit: $2,500/transaction. Cash TRAPPED — no NDF market for BOB.">Bolivia ⚠</div>
+              <div class="country-ccy">BOB · BNB · Banco Mercantil</div>
+            </div>
+          </div>
+          <div><div class="country-balance td-red">$6,100,000</div><div style="font-size:9px;color:var(--red);font-family:var(--font-num)">TRAPPED · USD controls</div></div>
+          <div class="country-status" style="background:var(--red)"></div>
+        </div>
+        <div class="country-row" style="background:rgba(239,68,68,0.04)">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇦🇷</span>
+            <div>
+              <div class="country-name" data-tooltip="ARGENTINA: Small operations. ARS undergoing gradual liberalization under Milei but restrictions remain. Repatriation channels: dividends (30 days post fiscal year-end), management fees, royalties. Avoid accumulating ARS balances — accelerated devaluation risk.">Argentina ⚠</div>
+              <div class="country-ccy">ARS · Banco Galicia · Santander AR</div>
+            </div>
+          </div>
+          <div><div class="country-balance td-orange">$2,800,000</div><div style="font-size:9px;color:var(--orange);font-family:var(--font-num)">PARTIAL RESTRICTION</div></div>
+          <div class="country-status" style="background:var(--orange)"></div>
+        </div>
+      </div>
     </div>
-    <div class="card"><h3>Revenue by Geography</h3><div class="chart-container" style="height:290px"><canvas id="chartGeoPie"></canvas></div></div>
+
+    <!-- Caribbean + Europe -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">Caribbean & Europe Positions <span class="stag stag-k">KYRIBA</span></div>
+        <button class="btn">Refresh</button>
+      </div>
+      <div class="card-scroll">
+        <div class="country-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇩🇴</span>
+            <div>
+              <div class="country-name" data-tooltip="DOMINICAN REPUBLIC: 1,600+ sites. Leading independent tower company in the Caribbean. 20-year MLA with Altice. DOP relatively stable. E-invoicing: e-CF via DGII (planned 2026). VAT (ITBIS): 18%. Banks: BHD León, Banreservas.">Dominican Rep.</div>
+              <div class="country-ccy">DOP · BHD León · Banreservas</div>
+            </div>
+          </div>
+          <div><div class="country-balance td-green">$9,840,000</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-num)">DOP 570M equiv.</div></div>
+          <div class="country-status" style="background:var(--green)"></div>
+        </div>
+        <div class="country-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇯🇲</span>
+            <div>
+              <div class="country-name" data-tooltip="JAMAICA: 507+ sites (ex-Digicel/Liberty LatAm). WARNING: Caribbean de-risking — correspondent banking reduced >40% since 2020. Manual MT940 import in Kyriba (no H2H connection). Scotia Jamaica and NCB are main banking relationships. JMD migrating to ISO 20022.">Jamaica ⚠</div>
+              <div class="country-ccy">JMD · Scotia Jamaica · NCB</div>
+            </div>
+          </div>
+          <div><div class="country-balance">$3,240,000</div><div style="font-size:9px;color:var(--orange);font-family:var(--font-num)">Limited SWIFT</div></div>
+          <div class="country-status" style="background:var(--orange)"></div>
+        </div>
+        <div class="country-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇵🇦</span>
+            <div>
+              <div class="country-name" data-tooltip="PANAMA: Dollarized country. Regional financial hub. USD operations simplify treasury management. Banks: BAC International, Banistmo. No FX risk — ideal for structuring regional intercompany loans.">Panama</div>
+              <div class="country-ccy">USD · BAC · Banistmo</div>
+            </div>
+          </div>
+          <div><div class="country-balance td-green">$5,120,000</div><div style="font-size:9px;color:var(--teal);font-family:var(--font-num)">USD · No FX Risk</div></div>
+          <div class="country-status" style="background:var(--green)"></div>
+        </div>
+        <div class="country-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇫🇷</span>
+            <div>
+              <div class="country-name" data-tooltip="FRANCE: Now PTI's largest single market (~10,000 sites) following the Infracos acquisition (Bouygues+SFR) closed Dec 2025. EUR. System: SEPA. Banks: BNP Paribas, Société Générale. E-invoicing: DGFiP. VAT: 20%.">France (Infracos)</div>
+              <div class="country-ccy">EUR · BNP Paribas · SG</div>
+            </div>
+          </div>
+          <div><div class="country-balance td-green">$41,200,000</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-num)">€35.6M equiv.</div></div>
+          <div class="country-status" style="background:var(--green)"></div>
+        </div>
+        <div class="country-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇮🇪</span>
+            <div>
+              <div class="country-name" data-tooltip="IRELAND: ~1,900 towers (Cellnex Ireland, €971M, closed Feb 2025) + 650+ eir towers. PTI now largest tower owner in Ireland. EUR. Banks: Allied Irish Banks, Bank of Ireland. SEPA. Note: 300 towers divested to Ancala Partners per competition regulator (CCPC).">Ireland</div>
+              <div class="country-ccy">EUR · AIB · Bank of Ireland</div>
+            </div>
+          </div>
+          <div><div class="country-balance td-green">$12,700,000</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-num)">€11.0M equiv.</div></div>
+          <div class="country-status" style="background:var(--green)"></div>
+        </div>
+        <div class="country-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span class="country-flag">🇺🇸</span>
+            <div>
+              <div class="country-name" data-tooltip="USA HQ: Florida. Centralized corporate treasury. Manages the group In-House Bank, external credit facilities ($2B multi-facility), and outbound intercompany loans to all subsidiaries. CFO: Michael Bremer (Wharton MBA, ex-Bain).">USA HQ — Florida</div>
+              <div class="country-ccy">USD · JPMorgan · Citibank</div>
+            </div>
+          </div>
+          <div><div class="country-balance td-green">$22,400,000</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-num)">Corporate treasury</div></div>
+          <div class="country-status" style="background:var(--green)"></div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="card"><h3>VAT / Sales Tax Compliance Tracker</h3><div class="table-wrap" id="vat-table-wrap"></div></div>
 </div>
 
-</div><!-- /content -->
+<!-- ═══════════════════ TAB 2: FX & RISK ═══════════════════ -->
+<div id="tab-fx" class="panel">
 
-<!-- FOOTER -->
-<div class="footer">
-  <span>Prototype Dashboard — Sample data for illustration purposes only · No real company data was used</span>
-  <span>Built by Luis Suárez · Financial Systems & Dashboard Expert · luisfsuav@gmail.com</span>
+  <div class="grid-4">
+    <div class="card" data-tooltip="TOTAL FX EXPOSURE: Sum of all PTI net currency exposures. Transactional = future foreign currency cash flows. Translational = consolidating LATAM+Europe subsidiaries into USD. Economic = long-term competitiveness impact. Source: Kyriba FX Exposure module.">
+      <div class="card-label">Total FX Exposure <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value gold">$84.2M</div>
+      <div class="card-sub">Net across all LATAM + EUR positions</div>
+    </div>
+    <div class="card" data-tooltip="HEDGE RATIO: % of total exposure covered by financial instruments (NDFs, forwards, options). PTI policy: hedge 70–80% of transactional exposures under 90 days. Currently at 67% — slightly below target.">
+      <div class="card-label">Overall Hedge Ratio <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value orange">67%</div>
+      <div class="card-sub">Target: 70-80% of transactional exposure</div>
+      <div class="card-delta warn">⚠ Slightly below target</div>
+    </div>
+    <div class="card" data-tooltip="HEDGE EFFECTIVENESS: Under IFRS 9, the treasury team must demonstrate an 'economic relationship' between the hedging instrument and the hedged item. No longer requires the 80–125% range of IAS 39. Kyriba automatically generates designation and assessment documentation. Source: Kyriba FX module.">
+      <div class="card-label">Hedge Effectiveness <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value green">96.2%</div>
+      <div class="card-sub">IFRS 9 compliant · All hedges</div>
+      <div class="card-delta up">✓ Formal designation documented</div>
+    </div>
+    <div class="card" data-tooltip="MTM P&L NDF PORTFOLIO: Mark-to-market value of all active NDF/forward contracts. Positive = gaining. Under IFRS 9, if designated as cash flow hedges, MTM is recorded in OCI (Other Comprehensive Income) — no impact on operating P&L for the period, only on equity.">
+      <div class="card-label">NDF Portfolio MTM <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value red">-$139K</div>
+      <div class="card-sub">Unrealized loss · OCI (IFRS 9)</div>
+      <div class="card-delta warn">▼ COP loss offset by CLP/PEN/MXN gains</div>
+    </div>
+  </div>
+  <div class="alert info" style="margin-bottom:12px">
+    <div class="alert-icon">📊</div>
+    <div>
+      <div class="alert-title">Interest Rate Risk — Floating Rate Exposure</div>
+      <div class="alert-body">PTI's €1.2B European SLL facility carries EURIBOR+280bp. Current EURIBOR 3M: ~2.65%. A 100bp EURIBOR increase = ~€12M additional annual interest. No interest rate swap currently in place for EUR facility — monitoring active. USD facilities at fixed rates. Source: <span class="stag stag-k">KYRIBA</span></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- FX Exposure by Currency -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">FX Exposure by Currency <span class="stag stag-k">KYRIBA</span></div>
+      </div>
+      <table>
+        <thead><tr><th>Pair</th><th data-tooltip="SPOT RATE: Current market exchange rate. For COP/USD: how many Colombian pesos per 1 US dollar.">Spot Rate</th><th>Net Exposure</th><th data-tooltip="NATURAL HEDGE: Coverage that occurs naturally when revenues and expenses in the same currency offset each other. E.g., MLA contracts with Claro Colombia with escalators tied to CPI or USD.">Natural Hdg</th><th>Fin. Hedge</th><th>Uncovered</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="td-gold td-mono">USD/COP</td><td class="td-mono">3,717</td><td class="td-mono">$18.4M</td><td class="td-dim">34%</td><td class="td-teal" style="color:var(--teal)">40%</td><td class="td-orange">26%</td><td><span class="pill pill-yellow">⚠ Monitor</span></td></tr>
+          <tr><td class="td-gold td-mono">USD/CLP</td><td class="td-mono">934</td><td class="td-mono">$8.3M</td><td class="td-dim">20%</td><td style="color:var(--teal)">47%</td><td class="td-orange">33%</td><td><span class="pill pill-orange">⚠ Low</span></td></tr>
+          <tr><td class="td-gold td-mono">EUR/USD</td><td class="td-mono">1.1582</td><td class="td-mono">$62.1M</td><td class="td-dim">15%</td><td style="color:var(--teal)">65%</td><td style="color:var(--teal)">20%</td><td><span class="pill pill-green">OK</span></td></tr>
+          <tr><td class="td-gold td-mono">USD/MXN</td><td class="td-mono">18.33</td><td class="td-mono">$6.5M</td><td class="td-dim">28%</td><td style="color:var(--teal)">42%</td><td class="td-dim">30%</td><td><span class="pill pill-yellow">Watch</span></td></tr>
+          <tr><td class="td-gold td-mono">USD/PEN</td><td class="td-mono">3.37</td><td class="td-mono">$4.2M</td><td class="td-dim">22%</td><td style="color:var(--teal)">43%</td><td class="td-dim">35%</td><td><span class="pill pill-yellow">Watch</span></td></tr>
+          <tr style="background:rgba(239,68,68,0.05)"><td class="td-red td-mono">USD/BOB</td><td class="td-mono">6.96*</td><td class="td-mono">$6.1M</td><td class="td-dim">0%</td><td class="td-red">0%</td><td class="td-red">100%</td><td><span class="pill pill-red">⚠ No Mkt</span></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px;font-size:10px;color:var(--text3)">*BOB: Fixed official rate. No active NDF market for BOB. Cash trapped.</div>
+
+      <div class="sub-label">Key FX Metrics</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px">
+        <div>
+          <div class="card-label" data-tooltip="FORWARD POINTS: The difference between the forward rate and the spot rate. For COP/USD, reflects the interest rate differential between Banco de la República (~11%) and the Fed (~4.5%). Positive forward points = cost of hedging.">Avg Forward Premium</div>
+          <div style="font-family:var(--font-mono);font-size:18px;color:var(--orange)">+6.52%</div>
+          <div class="card-sub">Annualized cost of hedging</div>
+        </div>
+        <div>
+          <div class="card-label" data-tooltip="NATURAL HEDGE COVERAGE: % of total exposure naturally covered because revenues and expenses in the same currency offset. PTI achieves natural hedging when MLA contracts are negotiated with USD or local CPI escalators.">Natural Hedge</div>
+          <div style="font-family:var(--font-mono);font-size:18px;color:var(--blue)">34%</div>
+          <div class="card-sub">Of total exposure offset</div>
+        </div>
+        <div>
+          <div class="card-label" data-tooltip="CTA (Cumulative Translation Adjustment): Accumulated translation differences in OCI when converting LATAM+Europe subsidiaries (local functional currencies) to USD for consolidation. Under IAS 21: assets and liabilities at closing rate, P&L at average rate.">CTA Impact (OCI)</div>
+          <div style="font-family:var(--font-mono);font-size:18px;color:var(--purple)">+$4.8M</div>
+          <div class="card-sub">IAS 21 translation adj.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active NDF Contracts -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">Active NDF / Forward Contracts <span class="stag stag-k">KYRIBA</span></div>
+        <button class="btn primary">+ New Hedge</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Pair</th><th>Notional</th><th>Fwd Rate</th><th>Maturity</th><th data-tooltip="MTM P&L: Current market value of the hedge. Positive = gaining. Under IFRS 9, if designated as a cash flow hedge, recorded in OCI and does not affect period P&L.">MTM P&L</th><th>IFRS 9</th></tr></thead>
+          <tbody>
+            <tr><td class="td-mono">NDF-001</td><td class="td-gold">USD/COP</td><td class="td-mono">$2,500,000</td><td class="td-mono">4,150</td><td class="td-orange">Mar 20</td><td class="td-red td-mono">-$260.8K</td><td><span class="pill pill-yellow">Maturing</span></td></tr>
+            <tr><td class="td-mono">NDF-002</td><td class="td-gold">USD/COP</td><td class="td-mono">$3,000,000</td><td class="td-mono">4,180</td><td>Apr 15</td><td class="td-red td-mono">-$332.3K</td><td><span class="pill pill-green">CF Hedge</span></td></tr>
+            <tr><td class="td-mono">NDF-003</td><td class="td-blue">USD/CLP</td><td class="td-mono">$4,200,000</td><td class="td-mono">900.0</td><td class="td-orange">Mar 20</td><td class="td-green td-mono">+$158.7K</td><td><span class="pill pill-yellow">Maturing</span></td></tr>
+            <tr><td class="td-mono">FWD-004</td><td class="td-blue">USD/CLP</td><td class="td-mono">$5,100,000</td><td class="td-mono">905.0</td><td>May 30</td><td class="td-green td-mono">+$163.4K</td><td><span class="pill pill-green">CF Hedge</span></td></tr>
+            <tr><td class="td-mono">NDF-005</td><td class="td-purple">USD/PEN</td><td class="td-mono">$1,800,000</td><td class="td-mono">3.250</td><td>Jun 10</td><td class="td-green td-mono">+$66.5K</td><td><span class="pill pill-green">CF Hedge</span></td></tr>
+            <tr><td class="td-mono">FWD-006</td><td style="color:var(--pink)">USD/MXN</td><td class="td-mono">$2,200,000</td><td class="td-mono">17.800</td><td>Apr 28</td><td class="td-green td-mono">+$65.5K</td><td><span class="pill pill-green">CF Hedge</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--bg3);border-radius:4px;font-size:11px;color:var(--text2)">
+        ⚠ <strong>NDF-001 and NDF-003 mature March 20</strong> — rollover decision required today. Coordinate with FX broker (Citi/JPM) before NYC cutoff (3pm EST).
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 3: PAYMENTS HUB ═══════════════════ -->
+<div id="tab-payments" class="panel">
+
+  <div class="alert danger">
+    <div class="alert-icon">🚨</div>
+    <div>
+      <div class="alert-title">Fraud Alert — PAY-2026-0892 Flagged by Kyriba AI</div>
+      <div class="alert-body">Beneficiary account change detected for Proveedor Mantenimiento Ecuador SAS (PAY-0892). Last change: 2 days ago. Amount: $284,000. Rule triggered: NEW_ACCOUNT + AMOUNT_HIGH. DO NOT APPROVE until phone verification completed — BEC (Business Email Compromise) risk.</div>
+    </div>
+  </div>
+
+  <div class="grid-4">
+    <div class="card" data-tooltip="PAYMENTS QUEUE: Total payments pending approval today. Includes: payroll, ground leases, maintenance vendors, local taxes, debt interest. Must be processed before each country's bank cutoff. Source: Kyriba Payment Hub.">
+      <div class="card-label">Pending Approvals <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value red">7</div>
+      <div class="card-sub">1 flagged · 6 ready</div>
+    </div>
+    <div class="card" data-tooltip="PAYMENT VALUE: Total amount to execute today in USD equivalent. The largest items are typically debt service (interest) or ground lease payments — PTI's primary operating expense.">
+      <div class="card-label">Today's Payment Value <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value gold">$2.84M</div>
+      <div class="card-sub">USD equiv. · 5 currencies</div>
+    </div>
+    <div class="card" data-tooltip="BANK CUT-OFF TIMES: Each bank has a deadline for receiving payment instructions. Colombia ACH CENIT: 2pm. Chile TEF: 3pm. Ecuador SPI: 1pm. Mexico SPEI: 24/7 (key advantage). France SEPA: 4pm. Miss the cutoff and payment rolls to next day — critical for debt interest payments.">
+      <div class="card-label">Next Bank Cut-off <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value orange">12:00</div>
+      <div class="card-sub">Ecuador SPI deadline · Local time</div>
+    </div>
+    <div class="card" data-tooltip="4-EYES PRINCIPLE: Core control. The person who CREATES a payment can NEVER be the same person who APPROVES it. The Treasury Manager is the 2nd signer (approver). Analysts create instructions in D365, Kyriba routes them for approval. SOX control.">
+      <div class="card-label">Pending 4-Eyes Approval <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value blue">6</div>
+      <div class="card-sub">Treasury Manager is 2nd approver</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div class="section-title">Payment Queue — Action Required</div>
+      <div class="section-actions">
+        <button class="btn success">Approve All Safe</button>
+        <button class="btn primary">Export</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Payment ID</th>
+          <th>Beneficiary</th>
+          <th>Market</th>
+          <th data-tooltip="PAYMENT CHANNEL: ACH CENIT = Colombia D+1. TEF = Chile D+0. SPI = Ecuador, 1pm cutoff. SPEI = Mexico 24/7. SEPA = Europe D+0. SWIFT MT103 = international. H2H = direct Kyriba↔Bank connection.">Channel</th>
+          <th>Amount</th>
+          <th data-tooltip="PAYMENT PURPOSE: Ground Lease = land rent where tower is located. Intercompany = loan between subsidiaries (arm's length). Taxes = local taxes. Vendor = maintenance suppliers.">Purpose</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:rgba(239,68,68,0.08)">
+          <td class="td-mono td-red">PAY-0892</td>
+          <td>Proveedor Mant. Ecuador</td>
+          <td>🇪🇨 ECU</td>
+          <td><span class="pill pill-blue">WIRE</span></td>
+          <td class="td-mono td-red">$284,000</td>
+          <td class="td-dim">Vendor payment</td>
+          <td><span class="pill pill-red">⚠ HOLD — BEC</span></td>
+          <td><button class="btn danger" style="font-size:9px">Investigate</button></td>
+        </tr>
+        <tr>
+          <td class="td-mono">PAY-0893</td>
+          <td>Landowners Colombia (Batch)</td>
+          <td>🇨🇴 COL</td>
+          <td><span class="pill pill-orange">ACH CENIT</span></td>
+          <td class="td-mono td-gold">COP 1,240M</td>
+          <td class="td-dim" data-tooltip="GROUND LEASE PAYMENT: The largest operating cost for a tower company. PTI pays rent to landowners where its 1,800+ Colombia towers sit. Typical contracts: 15–30 years with CPI escalators. IFRS 16 — capitalized on the balance sheet.">Ground Lease · 128 sites</td>
+          <td><span class="pill pill-yellow">Pending 4-eyes</span></td>
+          <td><button class="btn success" style="font-size:9px">Approve</button></td>
+        </tr>
+        <tr>
+          <td class="td-mono">PAY-0894</td>
+          <td>SII Chile — IVA Declaración</td>
+          <td>🇨🇱 CHL</td>
+          <td><span class="pill pill-blue">TEF</span></td>
+          <td class="td-mono">CLP 890.4M</td>
+          <td class="td-dim">Tax — IVA Monthly 19%</td>
+          <td><span class="pill pill-yellow">Pending 4-eyes</span></td>
+          <td><button class="btn success" style="font-size:9px">Approve</button></td>
+        </tr>
+        <tr>
+          <td class="td-mono">PAY-0895</td>
+          <td>Intercompany — PTI US HQ</td>
+          <td>🌐 CORP</td>
+          <td><span class="pill pill-purple">SWIFT</span></td>
+          <td class="td-mono td-blue">$1,200,000</td>
+          <td class="td-dim" data-tooltip="INTERCOMPANY LOAN INTEREST REPAYMENT: PTI Colombia remits interest to the US holding company. Subject to 15% withholding tax (Colombia, Art. 408 ET). Rate must be arm's length for tax deductibility. WHT declared and paid monthly to DIAN.">Intercompany interest (WHT 15%)</td>
+          <td><span class="pill pill-yellow">Pending 4-eyes</span></td>
+          <td><button class="btn success" style="font-size:9px">Approve</button></td>
+        </tr>
+        <tr>
+          <td class="td-mono">PAY-0896</td>
+          <td>Tower Maintenance LATAM</td>
+          <td>🇵🇪 PER</td>
+          <td><span class="pill pill-blue">WIRE</span></td>
+          <td class="td-mono">PEN 142,500</td>
+          <td class="td-dim">Maintenance vendor</td>
+          <td><span class="pill pill-yellow">Pending 4-eyes</span></td>
+          <td><button class="btn success" style="font-size:9px">Approve</button></td>
+        </tr>
+        <tr>
+          <td class="td-mono">PAY-0897</td>
+          <td>SAT Mexico — ISR Retención</td>
+          <td>🇲🇽 MEX</td>
+          <td><span class="pill pill-orange">SPEI</span></td>
+          <td class="td-mono">MXN 2,840,000</td>
+          <td class="td-dim">Tax withholding ISR</td>
+          <td><span class="pill pill-green">Approved — Queued</span></td>
+          <td><button class="btn" style="font-size:9px">View</button></td>
+        </tr>
+        <tr>
+          <td class="td-mono">PAY-0898</td>
+          <td>DIAN Colombia — Reteica</td>
+          <td>🇨🇴 COL</td>
+          <td><span class="pill pill-orange">ACH CENIT</span></td>
+          <td class="td-mono">COP 284M</td>
+          <td class="td-dim" data-tooltip="ICA (Industry and Commerce Tax): Colombian municipal tax on business activity. PTI Colombia files and pays monthly to each municipality where it has active towers. Typical rate: 0.4–1% of gross revenues. Not to be confused with VAT.">Reteica Q1 2026</td>
+          <td><span class="pill pill-yellow">Pending 4-eyes</span></td>
+          <td><button class="btn success" style="font-size:9px">Approve</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 4: COVENANTS ═══════════════════ -->
+<div id="tab-covenants" class="panel">
+
+  <div class="alert warning">
+    <div class="alert-icon">⚠️</div>
+    <div>
+      <div class="alert-title">Covenant Watch — 2 Ratios Approaching Threshold</div>
+      <div class="alert-body">Net Leverage Ratio: 6.1x (threshold: 6.5x — 94% utilized). DSCR Bolivia subsidiary: 1.31x (min: 1.25x — stress Q3 shows potential breach). Immediate review recommended. Source: <span class="stag stag-kd">K+D365</span></div>
+    </div>
+  </div>
+
+  <div class="grid-4">
+    <div class="card" data-tooltip="NET LEVERAGE RATIO: Net Debt ÷ EBITDA. PTI's most critical covenant. Measures how many years of EBITDA it would take to repay all debt. Tower companies typically cap at 6–7x. At 6.1x — near the limit. If breached: potential event of default = all debt could become immediately due.">
+      <div class="card-label">Net Leverage Ratio <span class="stag stag-kd">K+D365</span></div>
+      <div class="card-value orange">6.1x</div>
+      <div class="card-sub">Threshold: 6.5x · Headroom: 0.4x</div>
+      <div class="cov-bar-h8"><div class="cov-fill-h8" style="width:94%;background:var(--orange)"></div></div>
+      <div class="progress-labels"><span>0x</span><span style="color:var(--orange)">94% of 6.5x limit</span></div>
+    </div>
+    <div class="card" data-tooltip="DSCR (Debt Service Coverage Ratio): EBITDA ÷ (Interest + Principal). Measures whether the business generates enough cash to service its debt. Minimum: 1.25–1.30x for PTI securitizations. At 1.52x consolidated — healthy. But Bolivia sub at 1.31x — very close to threshold.">
+      <div class="card-label">DSCR Consolidated <span class="stag stag-kd">K+D365</span></div>
+      <div class="card-value green">1.52x</div>
+      <div class="card-sub">Minimum: 1.25x · Safe zone</div>
+      <div class="cov-bar-h8"><div class="cov-fill-h8" style="width:55%;background:var(--teal)"></div></div>
+      <div class="progress-labels"><span>1.0x</span><span style="color:var(--teal)">OK · Bolivia sub 1.31x ⚠</span></div>
+    </div>
+    <div class="card" data-tooltip="SENIOR SECURED LEVERAGE: Senior secured debt ÷ EBITDA. First-priority debt only. Typical threshold ≤3.0x. PTI at 2.8x — 0.2x headroom. Monitor monthly given debt growth from acquisitions (Infracos France, Cellnex Ireland).">
+      <div class="card-label">Senior Secured Leverage <span class="stag stag-kd">K+D365</span></div>
+      <div class="card-value blue">2.8x</div>
+      <div class="card-sub">Threshold: 3.0x · Headroom: 0.2x</div>
+      <div class="cov-bar-h8"><div class="cov-fill-h8" style="width:93%;background:var(--blue)"></div></div>
+      <div class="progress-labels"><span>0x</span><span style="color:var(--blue)">93% of 3.0x limit</span></div>
+    </div>
+    <div class="card" data-tooltip="INTEREST COVERAGE RATIO (ICR): EBITDA ÷ Total Interest. Measures how many times EBITDA covers interest ONLY (excluding principal). Minimum 2–4x. PTI at 3.2x — green zone. If it falls below 2x: covenant breach. Easiest ratio to maintain if EBITDA grows with new tower additions.">
+      <div class="card-label">Interest Coverage <span class="stag stag-d">D365</span></div>
+      <div class="card-value green">3.2x</div>
+      <div class="card-sub">Minimum: 2.0x · Comfortable</div>
+      <div class="cov-bar-h8"><div class="cov-fill-h8" style="width:40%;background:var(--teal)"></div></div>
+      <div class="progress-labels"><span>0x</span><span style="color:var(--teal)">60% above floor</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div class="section-title">Covenant Calendar — 50+ Subsidiaries · 400 Intercompany Loans <span class="stag stag-kd">K+D365</span></div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Facility</th>
+          <th>Entity</th>
+          <th data-tooltip="COVENANT TYPE: Financial = financial ratio (leverage, DSCR, ICR). Reporting = deliver information to lenders (financial statements). Operational = operating restrictions (no asset sales >X without consent). Sustainability = ESG KPIs under the European SLL.">Type</th>
+          <th data-tooltip="ACTUAL: Current calculated value this month. Derived from D365 Finance (EBITDA, expenses) + Kyriba (debt balance, payments).">Actual</th>
+          <th>Threshold</th>
+          <th>Headroom</th>
+          <th data-tooltip="NEXT TEST DATE: Date by which this covenant must be reported to the lender. Breaching the reporting covenant (even if all ratios are fine) can trigger an Event of Default.">Next Test</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:rgba(249,115,22,0.06)">
+          <td class="td-mono td-blue">Multi-Facility $2B</td><td>🌐 Consolidated</td><td>Net Leverage</td>
+          <td class="td-mono td-orange">6.1x</td><td class="td-mono">≤6.5x</td><td class="td-mono td-orange">0.4x</td>
+          <td class="td-dim">Mar 31</td><td><span class="pill pill-orange">⚠ Watch</span></td>
+        </tr>
+        <tr>
+          <td class="td-mono td-blue">€1.2B SLL Europe</td><td>🇫🇷🇮🇪 Europe</td><td>Net Leverage</td>
+          <td class="td-mono">5.8x</td><td class="td-mono">≤9.0x</td><td class="td-mono td-green">3.2x</td>
+          <td class="td-dim">Mar 31</td><td><span class="pill pill-green">OK</span></td>
+        </tr>
+        <tr>
+          <td class="td-mono td-blue">€1.2B SLL Europe</td><td>🇫🇷🇮🇪 Europe</td>
+          <td data-tooltip="SUSTAINABILITY LINKED LOAN (SLL): The €1.2B European facility is tied to ESG KPIs — rural coverage ('New Deal' in France), CO2 emissions reduction. If PTI meets all 3 ESG targets, it earns a rate discount (margin ratchet). Currently meeting 2/3 targets.">Sustainability KPIs</td>
+          <td class="td-mono td-orange">2/3</td><td class="td-mono">3/3</td><td class="td-mono td-orange">1 KPI miss</td>
+          <td class="td-dim">Jun 30</td><td><span class="pill pill-yellow">Partial</span></td>
+        </tr>
+        <tr>
+          <td class="td-mono td-blue">€775M CDPQ</td><td>🌎 LATAM HoldCo</td><td>DSCR</td>
+          <td class="td-mono">1.48x</td><td class="td-mono">≥1.30x</td><td class="td-mono td-green">0.18x</td>
+          <td class="td-dim">Apr 15</td><td><span class="pill pill-green">OK</span></td>
+        </tr>
+        <tr style="background:rgba(239,68,68,0.05)">
+          <td class="td-mono td-blue">Local Facility</td><td>🇧🇴 Bolivia Sub</td><td>DSCR</td>
+          <td class="td-mono td-orange">1.31x</td><td class="td-mono">≥1.25x</td><td class="td-mono td-orange">0.06x</td>
+          <td class="td-dim">Mar 31</td><td><span class="pill pill-orange">⚠ Thin</span></td>
+        </tr>
+        <tr>
+          <td class="td-mono td-blue">Multi-Facility $2B</td><td>🌐 Consolidated</td><td>Interest Coverage</td>
+          <td class="td-mono td-green">3.2x</td><td class="td-mono">≥2.0x</td><td class="td-mono td-green">1.2x</td>
+          <td class="td-dim">Mar 31</td><td><span class="pill pill-green">OK</span></td>
+        </tr>
+        <tr>
+          <td class="td-mono td-blue">All Facilities</td><td>🌐 All</td>
+          <td data-tooltip="REPORTING COVENANT: Obligation to deliver audited financial statements within X days of fiscal year-end. Failure to report (even if all ratios are fine) can trigger an Event of Default. 120-day window — deadline May 31.">Reporting — Audited FS</td>
+          <td class="td-mono td-green">On track</td><td class="td-mono">120 days</td><td class="td-mono td-green">42 days left</td>
+          <td class="td-dim">May 31</td><td><span class="pill pill-green">On Track</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 5: INTERCOMPANY LOANS ═══════════════════ -->
+<div id="tab-intercompany" class="panel">
+
+  <div class="grid-4">
+    <div class="card" data-tooltip="INTERCOMPANY LOANS: PTI has 418 active loans between subsidiaries. Hub-and-spoke structure: US HQ takes on external debt and on-lends to LATAM subsidiaries. Each loan requires: arm's length rate (OECD), annual transfer pricing documentation, and repayment capacity analysis. Source: Kyriba + D365.">
+      <div class="card-label">Total Intercompany Loans <span class="stag stag-kd">K+D365</span></div>
+      <div class="card-value gold">418</div>
+      <div class="card-sub">Active · 52 subsidiaries</div>
+    </div>
+    <div class="card" data-tooltip="OUTSTANDING BALANCE: Total amount lent. Appears as an ASSET on HQ's balance sheet and a LIABILITY on each subsidiary's. Upon consolidation, it is ELIMINATED (intercompany elimination). Appears only in individual entity statements. Source: Kyriba In-House Banking.">
+      <div class="card-label">Total Outstanding <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value blue">$1.84B</div>
+      <div class="card-sub">USD equiv. · All currencies</div>
+    </div>
+    <div class="card" data-tooltip="INTEREST DUE: Interest each subsidiary pays to HQ this month. Subject to local withholding tax: Colombia 15%, Chile 4%, Ecuador 22%, Mexico 10%. The treasury team calculates, withholds, and remits to tax authorities. Kyriba automatically generates payment schedules.">
+      <div class="card-label">Interest Due This Month <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value orange">$4.28M</div>
+      <div class="card-sub">Across all subsidiaries</div>
+    </div>
+    <div class="card" data-tooltip="THIN CAP (Thin Capitalization): Rule that limits the deductibility of intercompany debt for tax purposes. If the debt/equity ratio exceeds the local limit, interest is NOT deductible. Colombia: 3:1 (Art. 118-1 ET). Mexico: 3:1. Brazil: 2:1. Peru: 3:1. Bolivia currently borderline.">
+      <div class="card-label">Thin Cap Compliance <span class="stag stag-d">D365</span></div>
+      <div class="card-value green">✓ 51/52</div>
+      <div class="card-sub">Bolivia sub — borderline</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div class="section-title">Intercompany Loan Register — Key Facilities <span class="stag stag-kd">K+D365</span></div>
+      <button class="btn primary">Generate Interest Report</button>
+    </div>
+    <div class="table-wrap card-scroll" style="max-height:340px">
+      <table>
+        <thead>
+          <tr>
+            <th>Loan ID</th><th>Lender</th><th>Borrower</th>
+            <th data-tooltip="ARM'S LENGTH RATE: The loan rate must equal what an external bank would charge a comparable borrower (OECD Art. 9). If not arm's length, tax authorities will disallow the interest deduction and impose penalties. Requires annual rate benchmarking using market data (Bloomberg, Reuters).">Rate (Arm's Length)</th>
+            <th>Currency</th><th>Outstanding</th><th>Monthly Int.</th>
+            <th data-tooltip="WHT% (Withholding Tax): % withheld on interest before payment to the lender. Colombia: 15% (loans >1 year). Ecuador: 22%. Mexico: 10%. Chile: 4%. Peru: 15%. Bolivia: 12.5%. Filed and remitted to tax authorities monthly.">WHT%</th>
+            <th>Net Transfer</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="td-mono">ICL-COL-01</td><td class="td-blue">PTI USA HQ</td><td>🇨🇴 PTI Colombia</td><td class="td-gold td-mono">7.25%</td><td>USD</td><td class="td-mono">$84,200,000</td><td class="td-orange td-mono">$508,708</td><td class="td-red">15%</td><td class="td-green td-mono">$432,402</td><td><span class="pill pill-green">Current</span></td></tr>
+          <tr><td class="td-mono">ICL-CHL-01</td><td class="td-blue">PTI USA HQ</td><td>🇨🇱 PTI Chile</td><td class="td-gold td-mono">6.80%</td><td>USD</td><td class="td-mono">$218,500,000</td><td class="td-orange td-mono">$1,238,500</td><td class="td-red">4%</td><td class="td-green td-mono">$1,188,960</td><td><span class="pill pill-green">Current</span></td></tr>
+          <tr><td class="td-mono">ICL-ECU-01</td><td class="td-blue">PTI USA HQ</td><td>🇪🇨 PTI Ecuador</td><td class="td-gold td-mono">7.10%</td><td>USD</td><td class="td-mono">$52,800,000</td><td class="td-orange td-mono">$312,800</td><td class="td-red">22%</td><td class="td-green td-mono">$243,984</td><td><span class="pill pill-green">Current</span></td></tr>
+          <tr><td class="td-mono">ICL-MEX-01</td><td class="td-blue">PTI USA HQ</td><td>🇲🇽 PTI México</td><td class="td-gold td-mono">7.50%</td><td>USD</td><td class="td-mono">$76,400,000</td><td class="td-orange td-mono">$477,500</td><td class="td-red">10%</td><td class="td-green td-mono">$429,750</td><td><span class="pill pill-green">Current</span></td></tr>
+          <tr style="background:rgba(249,115,22,0.05)"><td class="td-mono">ICL-BOL-01</td><td class="td-blue">PTI USA HQ</td><td>🇧🇴 PTI Bolivia</td><td class="td-gold td-mono">8.20%</td><td>USD</td><td class="td-mono">$18,400,000</td><td class="td-orange td-mono">$125,733</td><td class="td-red">12.5%</td><td class="td-orange td-mono">⚠ USD blocked</td><td><span class="pill pill-orange">FX Hold</span></td></tr>
+          <tr><td class="td-mono">ICL-PER-01</td><td class="td-blue">PTI USA HQ</td><td>🇵🇪 PTI Perú</td><td class="td-gold td-mono">7.00%</td><td>USD</td><td class="td-mono">$24,100,000</td><td class="td-orange td-mono">$140,583</td><td class="td-red">15%</td><td class="td-green td-mono">$119,496</td><td><span class="pill pill-green">Current</span></td></tr>
+          <tr><td class="td-mono">ICL-DOM-01</td><td class="td-blue">PTI USA HQ</td><td>🇩🇴 PTI Dom.Rep.</td><td class="td-gold td-mono">7.35%</td><td>USD</td><td class="td-mono">$38,600,000</td><td class="td-orange td-mono">$236,425</td><td class="td-red">10%</td><td class="td-green td-mono">$212,783</td><td><span class="pill pill-green">Current</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:4px;font-size:10px;color:var(--text3)">
+      📋 Thin Cap Rules: Colombia 3:1 · México 3:1 · Brasil 2:1 · Perú 3:1 · Ecuador — · Bolivia — (under review). All rates validated OECD TP Guidelines Art. 9. Next TP documentation update: June 30, 2026.
+      &nbsp;&nbsp;&nbsp;🔒 FCPA Compliance: All intercompany payments documented with legitimate business purpose. Payment controls enforced via Kyriba 4-eyes workflow.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 6: 13-WEEK FORECAST ═══════════════════ -->
+<div id="tab-forecast" class="panel">
+
+  <div class="grid-4">
+    <div class="card" data-tooltip="ROLLING 13-WEEK FORECAST: Cash projection updated weekly, always looking 13 weeks ahead. Industry standard. Fed by: AP/AR from D365 Finance, historical Kyriba data, payroll, ground leases, debt interest, FX adjustments.">
+      <div class="card-label">Forecast Horizon <span class="stag stag-kd">K+D365</span></div>
+      <div class="card-value gold">13 weeks</div>
+      <div class="card-sub">Rolling · Updated every Monday</div>
+    </div>
+    <div class="card" data-tooltip="CASH FORECAST ACCURACY: 1 - |Actual - Forecast| / Forecast. World-class teams achieve >85% at 30 days. PTI benchmark: 87.3% — above target. Reported monthly to CFO Michael Bremer. Kyriba Trusted AI improves accuracy using machine learning.">
+      <div class="card-label">Accuracy (4-week) <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value green">87.3%</div>
+      <div class="card-sub">Target: >85% · Above benchmark</div>
+    </div>
+    <div class="card" data-tooltip="PROJECTED QUARTER-END CASH: Projected balance at quarter close. Reported to CFO for financial planning. Used to decide whether PTI needs to draw on its revolving credit facility (RCF) or can prepay debt.">
+      <div class="card-label">Projected Q1-End <span class="stag stag-kd">K+D365</span></div>
+      <div class="card-value blue">$138.4M</div>
+      <div class="card-sub">Consolidated · March 31</div>
+    </div>
+    <div class="card" data-tooltip="MIN LIQUIDITY COVENANT: Minimum cash PTI must maintain under its debt covenants. If the forecast shows a breach risk, activate the RCF with at least 5 business days' notice. Currently $142.7M vs $25M minimum — ample headroom.">
+      <div class="card-label">Min Liquidity Covenant <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value orange">$25.0M</div>
+      <div class="card-sub">Required · Current: $142.7M — OK</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div class="section-title">13-Week Cash Forecast — LATAM Consolidated (USD) <span class="stag stag-kd">K+D365</span></div>
+    </div>
+    <div style="margin-bottom:8px;display:flex;gap:16px;font-size:10px;color:var(--text3)">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:6px;background:var(--teal);display:inline-block;border-radius:1px"></span>Inflows (MLA Revenue — Claro, Movistar, WOM, Tigo)</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:6px;background:rgba(239,68,68,0.7);display:inline-block;border-radius:1px"></span>Outflows (Ground Leases, Debt Service, OpEx, Taxes)</span>
+    </div>
+    <div id="forecast-bars"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 7: BANKING OPS ═══════════════════ -->
+<div id="tab-banking" class="panel">
+
+  <div class="grid-4">
+    <div class="card" data-tooltip="BANK ACCOUNTS: PTI has 47+ bank accounts across 25 countries. The Treasury Manager maintains the Kyriba master record, manages account openings for acquisitions, updates signatories on personnel changes, and prepares KYC documentation. Source: Kyriba Bank Account Management.">
+      <div class="card-label">Total Bank Accounts <span class="stag stag-k">KYRIBA</span></div>
+      <div class="card-value gold">47</div>
+      <div class="card-sub">25 markets · 18 banking partners</div>
+    </div>
+    <div class="card" data-tooltip="FBAR (FinCEN Form 114): As a US company, PTI must report ALL foreign bank accounts where the aggregate balance exceeds $10,000 at any point during the year. Deadline: April 15 (automatic extension to Oct 15). Penalties: up to $165,353 or 50% of balance for willful violations.">
+      <div class="card-label">FBAR Filing <span class="stag stag-kd">K+D365</span></div>
+      <div class="card-value green">✓ Filed</div>
+      <div class="card-sub">FY2025 · All 47 accounts reported</div>
+    </div>
+    <div class="card" data-tooltip="KYC RENEWALS (Know Your Customer): Banks periodically require updated KYC documentation: financial statements, corporate structure, ultimate beneficial owners (UBO), licenses. If it expires without renewal, the bank may freeze accounts. Includes FCPA compliance review — all KYC packages verified for legitimate business purpose before account activation. Renewal calendar maintained in D365.">
+      <div class="card-label">KYC / FCPA Renewals <span class="stag stag-d">D365</span></div>
+      <div class="card-value orange">3</div>
+      <div class="card-sub">Bancolombia · BHD León · NCB Jamaica</div>
+      <div class="card-delta warn">⚠ FCPA review required on renewal</div>
+    </div>
+    <div class="card" data-tooltip="INSURANCE PROGRAM: PTI maintains corporate insurance policies across all operating markets — property, liability, D&amp;O, and tower-specific coverage. Treasury manages premium payment schedules, renewal coordination with brokers, and COI (Certificate of Insurance) issuance when required by lenders or counterparties. Tracked in D365 compliance calendar.">
+      <div class="card-label">Insurance Program <span class="stag stag-d">D365</span></div>
+      <div class="card-value blue">$2.1M</div>
+      <div class="card-sub">Annual premiums · 6 active policies</div>
+      <div class="card-delta warn">⚠ 2 COI requests pending — lenders</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-header"><div class="section-title">Banking Partners — LATAM <span class="stag stag-k">KYRIBA</span></div></div>
+      <table>
+        <thead><tr><th>Bank</th><th>Market</th><th data-tooltip="SWIFT BIC: Unique bank identifier for international transactions. 8–11 characters. COLBCOBM = Bancolombia. Required for every SWIFT payment instruction. Kyriba has 9,900+ banks and their BICs pre-configured.">SWIFT/BIC</th><th>Connectivity</th><th>KYC Status</th></tr></thead>
+        <tbody>
+          <tr><td>🇨🇴 Bancolombia</td><td>Colombia</td><td class="td-mono td-dim">COLBCOBM</td><td><span class="pill pill-blue">H2H SFTP</span></td><td><span class="pill pill-orange">Due Mar 30</span></td></tr>
+          <tr><td>🇨🇴 BBVA Colombia</td><td>Colombia</td><td class="td-mono td-dim">BBVACOBB</td><td><span class="pill pill-purple">SWIFT</span></td><td><span class="pill pill-green">OK 2026</span></td></tr>
+          <tr><td>🇨🇱 Santander Chile</td><td>Chile</td><td class="td-mono td-dim">BSCHCLRM</td><td><span class="pill pill-blue">H2H SFTP</span></td><td><span class="pill pill-green">OK 2026</span></td></tr>
+          <tr><td>🇪🇨 Banco Pacífico</td><td>Ecuador</td><td class="td-mono td-dim">BAPQECEC</td><td><span class="pill pill-purple">SWIFT</span></td><td><span class="pill pill-green">OK 2026</span></td></tr>
+          <tr><td>🇲🇽 BBVA México</td><td>México</td><td class="td-mono td-dim">BCMRMXMM</td><td><span class="pill pill-blue">H2H SFTP</span></td><td><span class="pill pill-green">OK 2026</span></td></tr>
+          <tr><td>🇩🇴 BHD León</td><td>Dom. Rep.</td><td class="td-mono td-dim">BHDLDOSD</td><td><span class="pill pill-purple">SWIFT</span></td><td><span class="pill pill-orange">Due Apr 15</span></td></tr>
+          <tr><td>🇯🇲 NCB Jamaica</td><td>Jamaica</td><td class="td-mono td-dim">NINCJMKX</td><td><span class="pill pill-yellow">Manual MT940</span></td><td><span class="pill pill-orange">Due Apr 30</span></td></tr>
+          <tr><td>🇺🇸 JPMorgan</td><td>USA HQ</td><td class="td-mono td-dim">CHASUS33</td><td><span class="pill pill-green">API Real-time</span></td><td><span class="pill pill-green">OK 2027</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="section-header"><div class="section-title">Reconciliation Status Today <span class="stag stag-kd">K+D365</span></div></div>
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span class="card-label" data-tooltip="AUTO-MATCHED: Transactions Kyriba automatically reconciled by matching the bank statement (MT940/CAMT.053) against internal D365 records. Rules: date + amount + reference. Target >90%.">Auto-matched (MT940)</span>
+          <span style="color:var(--teal);font-family:var(--font-num);font-size:11px">847/891 — 95.1%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:95.1%;background:var(--teal)"></div></div>
+      </div>
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span class="card-label" data-tooltip="PENDING INVESTIGATION: Transactions that could not be automatically reconciled and require manual review. Typical causes: date differences, rounding in amounts, incorrect references.">Pending Investigation</span>
+          <span style="color:var(--orange);font-family:var(--font-num);font-size:11px">32/891 — 3.6%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:3.6%;background:var(--orange)"></div></div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span class="card-label" data-tooltip="UNRECONCILED >24h: Items outstanding for more than 24 hours — require escalation. Target: 0 items >24h at end of each day. Directly impacts tomorrow's cash positioning report.">Unreconciled &gt;24h</span>
+          <span style="color:var(--red);font-family:var(--font-num);font-size:11px">12/891 — 1.3%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:1.3%;background:var(--red)"></div></div>
+      </div>
+      <div class="sub-label">Statement Formats Received Today</div>
+      <table>
+        <thead><tr><th>Format</th><th>Banks</th><th>Records</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="td-mono">MT940 SWIFT</td><td>JPM, Citi, Santander</td><td class="td-mono">412</td><td><span class="pill pill-green">Imported</span></td></tr>
+          <tr><td class="td-mono">CAMT.053</td><td>BNP Paribas, Deutsche</td><td class="td-mono">218</td><td><span class="pill pill-green">Imported</span></td></tr>
+          <tr><td class="td-mono">H2H SFTP</td><td>Bancolombia, Davivienda</td><td class="td-mono">147</td><td><span class="pill pill-green">Imported</span></td></tr>
+          <tr><td class="td-mono">Manual CSV</td><td>Caribbean local banks</td><td class="td-mono">114</td><td><span class="pill pill-yellow">Pending</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 8: DAILY WORKFLOW ═══════════════════ -->
+<div id="tab-daily" class="panel">
+
+  <div class="grid-2-1">
+    <!-- Timeline -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">Treasury Manager Daily Workflow — March 9, 2026</div>
+        <span style="font-size:10px;color:var(--text3)">Hover each task to see execution detail ℹ️</span>
+      </div>
+      <div class="tl-wrap">
+        <div class="tl-item">
+          <div class="tl-dot done"></div>
+          <div class="tl-time">06:30 EST</div>
+          <div>
+            <div class="tl-title" data-tooltip="KYRIBA MORNING PULL: Kyriba automatically imports prior-day MT940 bank statements overnight. By 6:30am, closing balances should be available. First step: open Kyriba → Cash Positioning → verify all banks submitted their MT940. If any missing (common in Caribbean), upload manually.">✅ Kyriba overnight import — MT940 auto-imported</div>
+            <div class="tl-desc">847/891 records matched · Caribbean manual pending</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot done"></div>
+          <div class="tl-time">07:00 EST</div>
+          <div>
+            <div class="tl-title" data-tooltip="CASH POSITIONING REPORT: Consolidate all-country balances in USD. In Kyriba: Cash Positioning → Export → format for the Director of Treasury. Report includes: balance by account, balance by country, global balance, variance vs. prior day, and comments on unusual movements (Bolivia USD block, Chile CLP volatility).">📊 Cash Positioning Report — Sent to Director of Treasury</div>
+            <div class="tl-desc">$142.7M global · Report delivered to Director of Treasury — Florida HQ</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot done"></div>
+          <div class="tl-time">07:45 EST</div>
+          <div>
+            <div class="tl-title" data-tooltip="FIRST APPROVAL ROUND: Analysts have already loaded the day's urgent payments in D365, received by Kyriba via API integration. Treasury Manager reviews Kyriba payment queue → verifies no fraud alerts → approves as 2nd signatory. Priority: early-cutoff payments (Ecuador SPI 1pm, Colombia ACH 2pm).">💳 First Payment Approval Round — Ecuador SPI priority</div>
+            <div class="tl-desc">6 payments approved · PAY-0892 on hold (fraud alert)</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot active"></div>
+          <div class="tl-time">10:00 EST</div>
+          <div>
+            <div class="tl-title" data-tooltip="FX REVIEW & NDF ROLLOVER: Review FX position in Kyriba → NDF-001 and NDF-003 expire March 20 → decide to roll or let expire → coordinate with FX broker (Citi or JPM Kinexys) → execute new NDF → Kyriba automatically records and generates accounting entries to D365 under IFRS 9.">💱 FX Review + NDF Rollover Decision (CURRENT)</div>
+            <div class="tl-desc">NDF-001 & NDF-003 expiring Mar 20 · Rollover decision needed</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot pending"></div>
+          <div class="tl-time">11:00 EST</div>
+          <div>
+            <div class="tl-title" data-tooltip="SECOND APPROVAL ROUND: Second batch before Ecuador's bank cutoff (1pm local = 12pm EST). Approve in Kyriba the payments verified during the morning. PAY-0892 verification (Ecuador vendor — beneficiary account change) must be completed before this window.">✅ Payment Approvals — Pre Ecuador Cut-off 12pm EST</div>
+            <div class="tl-desc">Ecuador SPI closes 12:00pm EST · 3 payments ready</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot pending"></div>
+          <div class="tl-time">12:30 EST</div>
+          <div>
+            <div class="tl-title" data-tooltip="COVENANT CALCULATION — SUBSIDIARIES: Monthly (or when new financial data arrives in D365), calculate ratios for 50+ subsidiaries. Bolivia today: extract EBITDA from D365 Finance → debt balance from Kyriba → calculate DSCR → 1.31x (floor 1.25x) — escalate immediately to the Director of Treasury if breach risk is identified.">⚖️ Covenant Ratio Calculation — Bolivia Sub (DSCR 1.31x)</div>
+            <div class="tl-desc">Bolivia DSCR 1.31x — stress test vs Q3 projections</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot pending"></div>
+          <div class="tl-time">14:00 EST</div>
+          <div>
+            <div class="tl-title" data-tooltip="13-WEEK FORECAST UPDATE: Update the rolling forecast in Kyriba with: (1) same-day collections recorded in D365 AR, (2) payments executed, (3) new information from operations team (new towers, signed MLA contracts), (4) FX adjustments for daily rate movements. D365 AP/AR feeds Kyriba automatically via API integration.">📈 13-Week Forecast Update — Import AR data from D365</div>
+            <div class="tl-desc">Import AP/AR balances · Adjust CLP positions post-WOM</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot pending"></div>
+          <div class="tl-time">15:30 EST</div>
+          <div>
+            <div class="tl-title" data-tooltip="INTERCOMPANY NETTING: Monthly multilateral netting process. Kyriba automatically calculates net positions between subsidiaries and determines the minimum number of physical transfers required. E.g., if Colombia owes $500K to Ecuador and Ecuador owes $300K to Colombia, only $200K is transferred (net).">🔗 Intercompany Netting — Monthly Multilateral Run</div>
+            <div class="tl-desc">12 subsidiaries in netting pool · ~$4.2M net settlement</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot pending"></div>
+          <div class="tl-time">16:30 EST</div>
+          <div>
+            <div class="tl-title" data-tooltip="EOD RECONCILIATION: Day's MT940 statements begin arriving. Kyriba runs automatic pre-reconciliation and flags exceptions. Treasury Manager reviews unreconciled items. By next morning: 100% reconciled before the morning report. Items unreconciled >24h are escalated to the Director of Treasury.">🔄 EOD Bank Reconciliation — Kyriba auto-matching MT940</div>
+            <div class="tl-desc">MT940 auto-import · Review unmatched items (&lt;1%)</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot pending"></div>
+          <div class="tl-time">17:00 EST</div>
+          <div>
+            <div class="tl-title" data-tooltip="D365 CLOSE TASKS: End of day, review in D365 Finance: (1) FX journal entries generated by Kyriba (NDFs valued at MTM), (2) GL reconciliation of intercompany loans, (3) posting of approved payments in AP. The Kyriba→D365 integration automatically pushes FX entries but discrepancies must be verified before close.">📊 D365 Close Tasks — Post FX journal entries from Kyriba</div>
+            <div class="tl-desc">GL reconciliation · FX journal entries export</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column: KPI report + Interview Ref -->
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="section-header">
+          <div class="section-title">Monthly KPI Report — To CFO</div>
+        </div>
+        <table>
+          <thead><tr><th>KPI</th><th>Current</th><th>Target</th><th>Trend</th></tr></thead>
+          <tbody>
+            <tr>
+              <td data-tooltip="CASH FORECAST ACCURACY: Accuracy of the 30-day cash forecast vs. actual results. Calculated at month-end. CFO Michael Bremer (Wharton MBA, ex-Bain) tracks this metric closely. Source: Kyriba Forecast vs. Actuals comparison.">Forecast Accuracy 30d</td>
+              <td class="td-green td-mono">87.3%</td><td class="td-dim">&gt;85%</td><td class="td-green">▲ +2.1pp</td>
+            </tr>
+            <tr>
+              <td data-tooltip="IDLE CASH RATIO: % of cash in non-earning accounts (checking accounts instead of money market funds or deposits). In a PE-backed company like PTI, the CFO wants idle cash minimized. All surplus must be invested or used to repay debt. Target &lt;10%. Source: Kyriba account type classification.">Idle Cash Ratio</td>
+              <td class="td-gold td-mono">14.2%</td><td class="td-dim">&lt;10%</td><td class="td-red">▼ Above target</td>
+            </tr>
+            <tr>
+              <td data-tooltip="PAYMENT PROCESSING TIME: Average time from payment instruction creation in D365 to bank settlement. The D365→Kyriba→Bank integration reduces this vs. manual processing. PTI target: &lt;24h for standard payments. Source: Kyriba payment timestamps.">Payment Processing Time</td>
+              <td class="td-green td-mono">18.4h</td><td class="td-dim">&lt;24h</td><td class="td-green">▲ Improving</td>
+            </tr>
+            <tr>
+              <td data-tooltip="BANK FEE SAVINGS: Savings on bank fees vs. prior period, achieved through bank negotiation, account consolidation, or payment method changes. Reported monthly to the Director of Treasury as evidence of continuous optimization. Source: Kyriba Bank Fee Analysis module.">Bank Fee Savings MTD</td>
+              <td class="td-green td-mono">$42,800</td><td class="td-dim">$30K/mo</td><td class="td-green">▲ Above target</td>
+            </tr>
+            <tr>
+              <td data-tooltip="HEDGE EFFECTIVENESS: Under IFRS 9, all FX hedges must demonstrate effectiveness (economic relationship between instrument and hedged item). If effectiveness falls below the acceptable range, the hedge is 'de-designated' and MTM hits P&L instead of OCI. Kyriba automatically generates the documentation.">Hedge Effectiveness</td>
+              <td class="td-green td-mono">96.2%</td><td class="td-dim">&gt;80%</td><td class="td-green">✓ Compliant</td>
+            </tr>
+            <tr>
+              <td data-tooltip="FBAR COMPLIANCE: All foreign bank accounts must be reported to FinCEN annually. Deadline: April 15. New accounts from acquisitions (Infracos France, Cellnex Ireland) must be added to this year's FBAR. Penalties: up to $165,353 or 50% of balance for willful violations.">FBAR Compliance</td>
+              <td class="td-green td-mono">100%</td><td class="td-dim">100%</td><td class="td-green">✓ Filed</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-// ============================================================
-// DATA
-// ============================================================
-const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  // CLOCK
+  function updateClock() {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const est = new Date(utc + (-5 * 60 * 60000));
+    const h = String(est.getHours()).padStart(2,'0');
+    const m = String(est.getMinutes()).padStart(2,'0');
+    const s = String(est.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${h}:${m}:${s} COL`;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
 
-const monthlyRevenue = [
-  {dtc:95000,amazon:210000,wholesale:45000,etsy:12000},
-  {dtc:88000,amazon:195000,wholesale:42000,etsy:10000},
-  {dtc:110000,amazon:230000,wholesale:55000,etsy:14000},
-  {dtc:105000,amazon:240000,wholesale:50000,etsy:13000},
-  {dtc:120000,amazon:260000,wholesale:58000,etsy:15000},
-  {dtc:115000,amazon:245000,wholesale:52000,etsy:14000},
-  {dtc:98000,amazon:220000,wholesale:48000,etsy:11000},
-  {dtc:125000,amazon:270000,wholesale:60000,etsy:16000},
-  {dtc:140000,amazon:290000,wholesale:65000,etsy:18000},
-  {dtc:160000,amazon:320000,wholesale:72000,etsy:20000},
-  {dtc:195000,amazon:385000,wholesale:85000,etsy:25000},
-  {dtc:210000,amazon:410000,wholesale:90000,etsy:28000},
-];
+  // TAB SWITCHING
+  function showTab(id, el) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    el.classList.add('active');
+  }
 
-const plData = [
-  {revenue:362000,cogs:130320,gross:231680,opex:152040,ebitda:79640},
-  {revenue:335000,cogs:120600,gross:214400,opex:147400,ebitda:67000},
-  {revenue:409000,cogs:147240,gross:261760,opex:159510,ebitda:102250},
-  {revenue:408000,cogs:146880,gross:261120,opex:159120,ebitda:102000},
-  {revenue:453000,cogs:163080,gross:289920,opex:167610,ebitda:122310},
-  {revenue:426000,cogs:153360,gross:272640,opex:161880,ebitda:110760},
-  {revenue:377000,cogs:135720,gross:241280,opex:154270,ebitda:87010},
-  {revenue:471000,cogs:169560,gross:301440,opex:171210,ebitda:130230},
-  {revenue:513000,cogs:184680,gross:328320,opex:179130,ebitda:149190},
-  {revenue:572000,cogs:205920,gross:366080,opex:190160,ebitda:175920},
-  {revenue:690000,cogs:248400,gross:441600,opex:213000,ebitda:228600},
-  {revenue:738000,cogs:265680,gross:472320,opex:222420,ebitda:249900},
-];
-
-const productData = [
-  {name:"Watch Deck Pro",units:14200,revenue:1420000,cogs:426000,margin:70,category:"Watches"},
-  {name:"Collector Pro",units:5800,revenue:1334000,cogs:400200,margin:70,category:"Watches"},
-  {name:"The Legacy",units:1200,revenue:594000,cogs:207900,margin:65,category:"Watches"},
-  {name:"Combo Deck Pro",units:3400,revenue:578000,cogs:179180,margin:69,category:"Combo"},
-  {name:"Armory Pro",units:2100,revenue:598500,cogs:179550,margin:70,category:"Knives"},
-  {name:"The Hub",units:4500,revenue:405000,cogs:141750,margin:65,category:"Lifestyle"},
-  {name:"Coin Deck",units:2800,revenue:294000,cogs:91140,margin:69,category:"Coins"},
-  {name:"The Winder",units:420,revenue:302400,cogs:120960,margin:60,category:"Watches"},
-  {name:"The Gallery",units:1100,revenue:181500,cogs:61710,margin:66,category:"Jewelry"},
-  {name:"Accessories",units:8200,revenue:246000,cogs:73800,margin:70,category:"Other"},
-];
-
-const inventoryData = [
-  {sku:"WDP-WAL",name:"Watch Deck Pro - Walnut",onHand:1240,inTransit:800,reorderPt:500,avgCost:30,weeks:6.2},
-  {sku:"WDP-BLK",name:"Watch Deck Pro - Black",onHand:980,inTransit:600,reorderPt:400,avgCost:30,weeks:5.1},
-  {sku:"COL-PRO",name:"Collector Pro",onHand:620,inTransit:400,reorderPt:300,avgCost:69,weeks:5.8},
-  {sku:"LEG-WAL",name:"Legacy - Walnut",onHand:145,inTransit:100,reorderPt:80,avgCost:173,weeks:7.2},
-  {sku:"CMD-PRO",name:"Combo Deck Pro",onHand:380,inTransit:250,reorderPt:200,avgCost:53,weeks:4.8},
-  {sku:"ARM-PRO",name:"Armory Pro",onHand:290,inTransit:200,reorderPt:150,avgCost:85,weeks:6.5},
-  {sku:"HUB-BLK",name:"The Hub - Black",onHand:520,inTransit:300,reorderPt:250,avgCost:31,weeks:5.0},
-  {sku:"WND-WAL",name:"The Winder - Walnut",onHand:68,inTransit:50,reorderPt:30,avgCost:288,weeks:8.1},
-  {sku:"GAL-001",name:"The Gallery",onHand:155,inTransit:100,reorderPt:60,avgCost:56,weeks:7.5},
-  {sku:"CND-OAK",name:"Coin Deck - Oak",onHand:340,inTransit:200,reorderPt:150,avgCost:33,weeks:5.4},
-];
-
-const fxData = [
-  {currency:"GBP",exposure:485000,rate:1.2700,hedged:62,pnl:12400},
-  {currency:"EUR",exposure:380000,rate:1.0800,hedged:55,pnl:-8200},
-  {currency:"CAD",exposure:210000,rate:0.7400,hedged:40,pnl:3100},
-  {currency:"AUD",exposure:95000,rate:0.6500,hedged:30,pnl:-1800},
-  {currency:"CNY",exposure:720000,rate:0.1400,hedged:70,pnl:-15600},
-];
-
-const vatData = [
-  {jurisdiction:"USA (Multi-state)",collected:312000,remitted:298000,due:14000,nextFiling:"2026-04-15",status:"Current"},
-  {jurisdiction:"UK (VAT 20%)",collected:97000,remitted:85000,due:12000,nextFiling:"2026-04-07",status:"Current"},
-  {jurisdiction:"Germany (VAT 19%)",collected:62000,remitted:55000,due:7000,nextFiling:"2026-04-10",status:"Current"},
-  {jurisdiction:"EU OSS",collected:48000,remitted:41000,due:7000,nextFiling:"2026-04-30",status:"Pending"},
-  {jurisdiction:"Canada (GST/HST)",collected:28000,remitted:25000,due:3000,nextFiling:"2026-06-15",status:"Current"},
-];
-
-const channelMetrics = [
-  {ch:"Amazon",rev:3275000,pct:56.8,cogs:1179000,fees:425000,ads:295000,margin:42.0,aov:118,orders:27754,growth:38,color:"var(--blue)"},
-  {ch:"DTC (Shopify)",rev:1661000,pct:28.8,cogs:598000,fees:66440,ads:248000,margin:45.1,aov:152,orders:10927,growth:85,color:"var(--accent)"},
-  {ch:"Wholesale",rev:622000,pct:10.8,cogs:311000,fees:0,ads:0,margin:50.0,aov:2800,orders:222,growth:42,color:"var(--purple)"},
-  {ch:"Etsy",rev:196000,pct:3.4,cogs:70560,fees:31360,ads:15000,margin:40.3,aov:98,orders:2000,growth:25,color:"var(--orange)"},
-];
-
-const kpiCards = [
-  {label:"YTD Revenue",value:"$5.75M",change:49.5,target:"$6.0M",pct:95.8},
-  {label:"Gross Margin",value:"64.0%",change:2.1,target:"65%",pct:98.5},
-  {label:"EBITDA",value:"$1.60M",change:68.2,target:"$1.8M",pct:88.9},
-  {label:"Cash Position",value:"$482K",change:12.3,target:"$500K",pct:96.4},
-  {label:"Orders YTD",value:"44,220",change:32.1,target:"48,000",pct:92.1},
-  {label:"AOV",value:"$130",change:8.4,target:"$135",pct:96.3},
-  {label:"CAC (Blended)",value:"$28.40",change:-5.2,target:"$25.00",pct:87.1},
-  {label:"LTV:CAC Ratio",value:"4.2x",change:15.0,target:"5.0x",pct:84.0},
-];
-
-// ============================================================
-// HELPERS
-// ============================================================
-const fmt = (v) => {
-  if(Math.abs(v)>=1e6) return '$'+(v/1e6).toFixed(1)+'M';
-  if(Math.abs(v)>=1e3) return '$'+(v/1e3).toFixed(0)+'K';
-  return '$'+v.toFixed(0);
-};
-const fmtFull = (v) => '$'+v.toLocaleString();
-const pctColor = (v) => v>=0?'var(--green)':'var(--red)';
-const marginColor = (v) => v>=45?'var(--green)':v>=40?'var(--orange)':'var(--red)';
-const stockBadge = (w) => {
-  if(w>6) return '<span class="badge badge-green">Healthy</span>';
-  if(w>4) return '<span class="badge badge-orange">Watch</span>';
-  return '<span class="badge badge-red">Low</span>';
-};
-const statusBadge = (s) => {
-  if(s==="Current") return '<span class="badge badge-green">Current</span>';
-  if(s==="Pending") return '<span class="badge badge-orange">Pending</span>';
-  return '<span class="badge badge-red">'+s+'</span>';
-};
-
-// Chart.js global
-Chart.defaults.color = '#8b8fa3';
-Chart.defaults.borderColor = '#2a2e3d';
-Chart.defaults.font.family = "'DM Sans', sans-serif";
-Chart.defaults.font.size = 12;
-Chart.defaults.plugins.legend.labels.boxWidth = 12;
-Chart.defaults.plugins.legend.labels.padding = 16;
-
-let charts = {};
-function destroyChart(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
-
-// ============================================================
-// RENDER: KPI Overview
-// ============================================================
-function renderKPIGrid() {
-  const grid = document.getElementById('kpi-grid');
-  grid.innerHTML = kpiCards.map(k => {
-    const up = k.change >= 0;
-    const barColor = k.pct>=90?'var(--green)':k.pct>=70?'var(--orange)':'var(--red)';
-    return `<div class="card">
-      <div class="kpi-label">${k.label}</div>
-      <div class="kpi-value">${k.value}</div>
-      <span class="kpi-badge ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(k.change).toFixed(1)}% YoY</span>
-      <div class="kpi-target"><span>vs Target: ${k.target}</span><span>${k.pct.toFixed(1)}%</span></div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(k.pct,100)}%;background:${barColor}"></div></div>
-    </div>`;
-  }).join('');
-}
-
-function renderOverviewCharts() {
-  // Revenue Trend
-  destroyChart('revTrend');
-  charts.revTrend = new Chart(document.getElementById('chartRevTrend'), {
-    type: 'line',
-    data: {
-      labels: months,
-      datasets: [{
-        label: 'Revenue',
-        data: plData.map(d=>d.revenue),
-        borderColor: '#c8a97e',
-        backgroundColor: 'rgba(200,169,126,0.12)',
-        fill: true,
-        tension: 0.35,
-        pointRadius: 4,
-        pointBackgroundColor: '#c8a97e',
-        borderWidth: 2.5,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: { y: { ticks: { callback: v=>fmt(v) }, grid: { color:'#2a2e3d44' } }, x: { grid: { display:false } } },
-      plugins: { tooltip: { callbacks: { label: ctx => fmt(ctx.raw) } } }
-    }
-  });
-
-  // EBITDA vs Gross
-  destroyChart('ebitda');
-  charts.ebitda = new Chart(document.getElementById('chartEbitda'), {
-    type: 'bar',
-    data: {
-      labels: months,
-      datasets: [
-        { label:'Gross Profit', data: plData.map(d=>d.gross), backgroundColor:'rgba(96,165,250,0.5)', borderRadius:4 },
-        { label:'EBITDA', data: plData.map(d=>d.ebitda), backgroundColor:'rgba(74,222,128,0.6)', borderRadius:4 },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: { y: { ticks: { callback: v=>fmt(v) }, grid:{color:'#2a2e3d44'} }, x: { grid:{display:false} } },
-      plugins: { tooltip: { callbacks: { label: ctx => ctx.dataset.label+': '+fmt(ctx.raw) } } }
-    }
-  });
-}
-
-// ============================================================
-// RENDER: P&L
-// ============================================================
-function renderPL(periodIdx) {
-  const filtered = periodIdx === 'all' ? plData : [plData[parseInt(periodIdx)]];
-  const t = filtered.reduce((a,m)=>({
-    revenue:a.revenue+m.revenue, cogs:a.cogs+m.cogs, gross:a.gross+m.gross,
-    opex:a.opex+m.opex, ebitda:a.ebitda+m.ebitda
-  }),{revenue:0,cogs:0,gross:0,opex:0,ebitda:0});
-
-  const title = periodIdx==='all' ? 'Income Statement (YTD 2025)' : `Income Statement (${months[parseInt(periodIdx)]} 2025)`;
-  document.getElementById('pl-title').textContent = title;
-
-  const lines = [
-    {label:"Net Revenue",val:t.revenue,bold:true,accent:false},
-    {label:"\u00A0\u00A0Cost of Goods Sold",val:-t.cogs,bold:false},
-    {label:"Gross Profit",val:t.gross,bold:true,accent:true},
-    {label:"\u00A0\u00A0Marketing & Ads",val:-(t.opex*0.38),bold:false},
-    {label:"\u00A0\u00A0Payroll & Contractors",val:-(t.opex*0.28),bold:false},
-    {label:"\u00A0\u00A0Amazon Fees",val:-(t.opex*0.18),bold:false},
-    {label:"\u00A0\u00A0Shipping & Fulfillment",val:-(t.opex*0.08),bold:false},
-    {label:"\u00A0\u00A0SaaS & Tools",val:-(t.opex*0.04),bold:false},
-    {label:"\u00A0\u00A0Other OpEx",val:-(t.opex*0.04),bold:false},
-    {label:"Total Operating Expenses",val:-t.opex,bold:true,accent:false},
-    {label:"EBITDA",val:t.ebitda,bold:true,accent:true},
+  // 13-WEEK FORECAST BARS
+  const weeks = [
+    {w:'W1 Mar 10', in:8.4,  out:6.1,  end:58.4},
+    {w:'W2 Mar 17', in:5.2,  out:7.8,  end:55.8},
+    {w:'W3 Mar 24', in:9.1,  out:5.4,  end:59.5},
+    {w:'W4 Mar 31', in:12.4, out:9.8,  end:62.1},
+    {w:'W5 Apr 7',  in:6.8,  out:8.2,  end:60.7},
+    {w:'W6 Apr 14', in:7.4,  out:6.8,  end:61.3},
+    {w:'W7 Apr 21', in:8.9,  out:7.1,  end:63.1},
+    {w:'W8 Apr 28', in:5.6,  out:11.4, end:57.3},
+    {w:'W9 May 5',  in:9.2,  out:6.4,  end:60.1},
+    {w:'W10 May 12',in:8.4,  out:7.2,  end:61.3},
+    {w:'W11 May 19',in:7.8,  out:6.9,  end:62.2},
+    {w:'W12 May 26',in:10.2, out:8.8,  end:63.6},
+    {w:'W13 Jun 2', in:6.4,  out:7.1,  end:62.9},
   ];
-
-  const tbl = document.getElementById('pl-table');
-  tbl.innerHTML = `<thead><tr><th>Line Item</th><th class="r">Amount</th><th class="r">% Rev</th></tr></thead><tbody>`
-    + lines.map(l => {
-      const pct = (l.val/t.revenue*100);
-      const cls = (l.bold?'pl-bold':'')+(l.accent?' pl-accent':'');
-      const valColor = l.val<0?'var(--red)':l.accent?'var(--accent)':'var(--text)';
-      const display = l.val<0 ? `(${fmt(Math.abs(l.val))})` : fmt(l.val);
-      const pctDisplay = pct<0 ? `(${Math.abs(pct).toFixed(1)}%)` : pct.toFixed(1)+'%';
-      return `<tr class="pl-row ${cls}">
-        <td>${l.label}</td>
-        <td class="r mono" style="color:${valColor}">${display}</td>
-        <td class="r mono" style="color:var(--muted)">${pctDisplay}</td>
-      </tr>`;
-    }).join('')
-    + '</tbody>';
-
-  // Waterfall chart
-  destroyChart('waterfall');
-  charts.waterfall = new Chart(document.getElementById('chartWaterfall'), {
-    type: 'bar',
-    data: {
-      labels: months,
-      datasets: [
-        { label:'COGS', data: plData.map(d=>d.cogs), backgroundColor:'rgba(248,113,113,0.5)', stack:'s' },
-        { label:'OpEx', data: plData.map(d=>d.opex), backgroundColor:'rgba(251,146,60,0.5)', stack:'s' },
-        { label:'EBITDA', data: plData.map(d=>d.ebitda), backgroundColor:'rgba(74,222,128,0.6)', stack:'s', borderRadius:{topLeft:4,topRight:4} },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      scales: { y:{stacked:true,ticks:{callback:v=>fmt(v)},grid:{color:'#2a2e3d44'}}, x:{stacked:true,grid:{display:false}} },
-      plugins: { tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw)}} }
-    }
+  document.addEventListener('DOMContentLoaded', function() {
+    const wrap = document.getElementById('forecast-bars');
+    if (!wrap) return;
+    weeks.forEach(w => {
+      const net = w.in - w.out;
+      const maxIn = 14, maxOut = 14;
+      const isNeg = net < 0;
+      const row = document.createElement('div');
+      row.className = 'forecast-week';
+      row.innerHTML = `
+        <div class="forecast-label">${w.w}</div>
+        <div>
+          <div class="forecast-bar-bg" style="margin-bottom:2px">
+            <div class="forecast-bar-fill" style="width:${(w.in/maxIn)*100}%;background:var(--teal);color:#000">
+              +$${w.in}M
+            </div>
+          </div>
+          <div class="forecast-bar-bg">
+            <div class="forecast-bar-fill" style="width:${(w.out/maxOut)*100}%;background:rgba(239,68,68,0.7)">
+              -$${w.out}M
+            </div>
+          </div>
+        </div>
+        <div class="forecast-val" style="color:${isNeg ? 'var(--orange)' : 'var(--teal)'}">
+          $${w.end}M<br><span style="font-size:9px;color:var(--text3)">period end</span>
+        </div>
+      `;
+      wrap.appendChild(row);
+    });
   });
-}
-
-// ============================================================
-// RENDER: CASH FLOW
-// ============================================================
-function renderCashFlow() {
-  const cfKpis = [
-    {label:"Current Balance",value:"$482,300",sub:"+$38K vs last month"},
-    {label:"Avg Weekly Inflow",value:"$143,200",sub:"+12% MoM"},
-    {label:"Avg Weekly Outflow",value:"$108,500",sub:"+8% MoM"},
-    {label:"Runway (at burn rate)",value:"14.2 months",sub:"Comfortable"},
-  ];
-  document.getElementById('cf-kpis').innerHTML = cfKpis.map(c=>`<div class="card mini-kpi">
-    <div class="kpi-label">${c.label}</div>
-    <div class="kpi-value">${c.value}</div>
-    <div class="kpi-sub" style="color:var(--green)">${c.sub}</div>
-  </div>`).join('');
-
-  const weeks = Array.from({length:12},(_,i)=>'W'+(i+1));
-  const inflows = [128000,135000,142000,138000,151000,147000,155000,162000,158000,170000,168000,175000];
-  const outflows = [95000,98000,102000,100000,108000,105000,112000,118000,115000,122000,120000,128000];
-  const balance = []; let b = 280000; inflows.forEach((inf,i)=>{ b+=inf-outflows[i]; balance.push(b); });
-
-  destroyChart('cf');
-  charts.cf = new Chart(document.getElementById('chartCF'), {
-    type: 'bar',
-    data: {
-      labels: weeks,
-      datasets: [
-        { label:'Inflows', data: inflows, backgroundColor:'rgba(74,222,128,0.6)', borderRadius:4, order:2 },
-        { label:'Outflows', data: outflows.map(v=>-v), backgroundColor:'rgba(248,113,113,0.5)', borderRadius:4, order:2 },
-        { label:'Balance', data: balance, type:'line', borderColor:'#c8a97e', backgroundColor:'transparent', pointRadius:4, pointBackgroundColor:'#c8a97e', borderWidth:2.5, order:1, yAxisID:'y1' },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      scales: {
-        y:{ticks:{callback:v=>fmt(Math.abs(v))},grid:{color:'#2a2e3d44'}},
-        y1:{position:'right',ticks:{callback:v=>fmt(v)},grid:{display:false}},
-        x:{grid:{display:false}}
-      },
-      plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(Math.abs(ctx.raw))}}}
-    }
-  });
-
-  destroyChart('cfPie');
-  charts.cfPie = new Chart(document.getElementById('chartCFPie'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Inventory Purchase','Marketing','Payroll','Shipping/3PL','SaaS/Other'],
-      datasets: [{ data:[42,25,18,8,7], backgroundColor:['#c8a97e','#60a5fa','#a78bfa','#4ade80','#fb923c'], borderWidth:0 }]
-    },
-    options: { responsive:true, maintainAspectRatio:false, cutout:'55%',
-      plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:ctx=>ctx.label+': '+ctx.raw+'%'}} }
-    }
-  });
-}
-
-// ============================================================
-// RENDER: CHANNELS
-// ============================================================
-function renderChannels(filter) {
-  const filtered = filter==='all' ? channelMetrics : channelMetrics.filter(c=>c.ch.toLowerCase().includes(filter));
-
-  document.getElementById('ch-cards').innerHTML = channelMetrics.map(c=>`<div class="card">
-    <div class="ch-header"><span class="ch-name">${c.ch}</span><span class="ch-growth">▲ ${c.growth}% YoY</span></div>
-    <div class="ch-value">${fmt(c.rev)}</div>
-    <div class="ch-meta">
-      <span>Margin: <b style="color:${marginColor(c.margin)}">${c.margin}%</b></span>
-      <span>AOV: <b style="color:var(--text)">$${c.aov}</b></span>
-    </div>
-    <div class="ch-bar"><div class="ch-bar-fill" style="width:${c.pct}%;background:${c.color}"></div></div>
-    <div class="ch-pct">${c.pct}% of total revenue</div>
-  </div>`).join('');
-
-  // Stacked bar
-  destroyChart('chBar');
-  charts.chBar = new Chart(document.getElementById('chartChBar'), {
-    type: 'bar',
-    data: {
-      labels: months,
-      datasets: [
-        { label:'Amazon', data:monthlyRevenue.map(m=>m.amazon), backgroundColor:'rgba(96,165,250,0.7)', stack:'s' },
-        { label:'DTC', data:monthlyRevenue.map(m=>m.dtc), backgroundColor:'rgba(200,169,126,0.7)', stack:'s' },
-        { label:'Wholesale', data:monthlyRevenue.map(m=>m.wholesale), backgroundColor:'rgba(167,139,250,0.7)', stack:'s' },
-        { label:'Etsy', data:monthlyRevenue.map(m=>m.etsy), backgroundColor:'rgba(251,146,60,0.7)', stack:'s', borderRadius:{topLeft:4,topRight:4} },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      scales:{y:{stacked:true,ticks:{callback:v=>fmt(v)},grid:{color:'#2a2e3d44'}},x:{stacked:true,grid:{display:false}}},
-      plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw)}}}
-    }
-  });
-
-  // Table
-  document.getElementById('ch-table-wrap').innerHTML = `<table>
-    <thead><tr><th>Channel</th><th class="r">Revenue</th><th class="r">COGS</th><th class="r">Fees</th><th class="r">Ads</th><th class="r">Net Margin</th></tr></thead>
-    <tbody>${filtered.map(c=>`<tr>
-      <td>${c.ch}</td><td class="r mono">${fmt(c.rev)}</td><td class="r mono">(${fmt(c.cogs)})</td>
-      <td class="r mono">(${fmt(c.fees)})</td><td class="r mono">(${fmt(c.ads)})</td>
-      <td class="r" style="color:${marginColor(c.margin)};font-weight:600">${c.margin}%</td>
-    </tr>`).join('')}</tbody></table>`;
-}
-
-// ============================================================
-// RENDER: PRODUCTS
-// ============================================================
-function renderProducts(cat) {
-  const filtered = cat==='all' ? productData : productData.filter(p=>p.category===cat);
-  const sorted = [...filtered].sort((a,b)=>b.revenue-a.revenue);
-
-  document.getElementById('prod-table-wrap').innerHTML = `<table>
-    <thead><tr><th>Product</th><th class="r">Units</th><th class="r">Revenue</th><th class="r">COGS</th><th class="r">GM%</th><th class="r">Contribution</th></tr></thead>
-    <tbody>${sorted.map(p=>`<tr>
-      <td>${p.name}</td><td class="r mono">${p.units.toLocaleString()}</td><td class="r mono">${fmt(p.revenue)}</td>
-      <td class="r mono">${fmt(p.cogs)}</td>
-      <td class="r" style="color:${p.margin>=68?'var(--green)':'var(--orange)'};font-weight:600">${p.margin}%</td>
-      <td class="r mono">${fmt(p.revenue-p.cogs)}</td>
-    </tr>`).join('')}</tbody></table>`;
-
-  // Top performers
-  const top5 = [...productData].sort((a,b)=>b.revenue-a.revenue).slice(0,5);
-  document.getElementById('top-performers').innerHTML = top5.map((p,i)=>`<div class="top-item">
-    <div style="display:flex;align-items:center;gap:10px"><span class="top-rank">#${i+1}</span><span class="top-name">${p.name}</span></div>
-    <span class="top-val">${fmt(p.revenue)}</span>
-  </div>`).join('');
-
-  // Pie
-  const cats = {};
-  productData.forEach(p=>{ cats[p.category] = (cats[p.category]||0)+p.revenue; });
-  destroyChart('prodPie');
-  charts.prodPie = new Chart(document.getElementById('chartProdPie'), {
-    type: 'doughnut',
-    data: {
-      labels: Object.keys(cats),
-      datasets: [{ data:Object.values(cats), backgroundColor:['#c8a97e','#60a5fa','#a78bfa','#4ade80','#fb923c','#22d3ee'], borderWidth:0 }]
-    },
-    options: { responsive:true, maintainAspectRatio:false, cutout:'50%',
-      plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:ctx=>ctx.label+': '+fmt(ctx.raw)}} }
-    }
-  });
-}
-
-// ============================================================
-// RENDER: INVENTORY
-// ============================================================
-function renderInventory() {
-  const invKpis = [
-    {label:"Total Inventory Value",value:"$386,420",sub:"At avg cost"},
-    {label:"In Transit (from China)",value:"$148,200",sub:"ETA: 3-5 weeks"},
-    {label:"Avg Weeks of Supply",value:"6.0 wks",sub:"Target: 6-8 wks"},
-    {label:"Inventory Turnover",value:"8.2x",sub:"Annual, improving"},
-  ];
-  document.getElementById('inv-kpis').innerHTML = invKpis.map(c=>`<div class="card mini-kpi">
-    <div class="kpi-label">${c.label}</div><div class="kpi-value">${c.value}</div><div class="kpi-sub">${c.sub}</div>
-  </div>`).join('');
-
-  document.getElementById('inv-table-wrap').innerHTML = `<table>
-    <thead><tr><th>SKU</th><th>Product</th><th class="r">On Hand</th><th class="r">In Transit</th><th class="r">Reorder Pt</th><th class="r">Avg Cost</th><th class="r">Value</th><th class="r">Wks Supply</th><th style="text-align:center">Status</th></tr></thead>
-    <tbody>${inventoryData.map(r=>`<tr>
-      <td class="mono" style="color:var(--accent);font-weight:600">${r.sku}</td>
-      <td>${r.name}</td>
-      <td class="r mono">${r.onHand.toLocaleString()}</td>
-      <td class="r mono">${r.inTransit.toLocaleString()}</td>
-      <td class="r mono">${r.reorderPt.toLocaleString()}</td>
-      <td class="r mono">$${r.avgCost}</td>
-      <td class="r mono">${fmt(r.onHand*r.avgCost)}</td>
-      <td class="r mono">${r.weeks.toFixed(1)}</td>
-      <td style="text-align:center">${stockBadge(r.weeks)}</td>
-    </tr>`).join('')}</tbody></table>`;
-}
-
-// ============================================================
-// RENDER: INTERNATIONAL
-// ============================================================
-function renderInternational() {
-  document.getElementById('fx-table-wrap').innerHTML = `<table>
-    <thead><tr><th>Currency</th><th class="r">Exposure</th><th class="r">Spot Rate</th><th class="r">% Hedged</th><th class="r">FX P&L</th></tr></thead>
-    <tbody>${fxData.map(r=>`<tr>
-      <td style="font-weight:700;color:var(--accent)">${r.currency}</td>
-      <td class="r mono">${fmt(r.exposure)}</td>
-      <td class="r mono">${r.rate.toFixed(4)}</td>
-      <td class="r" style="color:${r.hedged>=60?'var(--green)':'var(--orange)'}">${r.hedged}%</td>
-      <td class="r mono" style="color:${r.pnl>=0?'var(--green)':'var(--red)'};font-weight:600">${r.pnl>=0?'+':''}${fmt(r.pnl)}</td>
-    </tr>`).join('')}</tbody></table>`;
-
-  destroyChart('geoPie');
-  charts.geoPie = new Chart(document.getElementById('chartGeoPie'), {
-    type: 'doughnut',
-    data: {
-      labels: ['USA','UK','Canada','Germany','EU (Other)','Rest of World'],
-      datasets: [{ data:[3680000,850000,420000,310000,280000,214000], backgroundColor:['#60a5fa','#c8a97e','#f87171','#a78bfa','#4ade80','#fb923c'], borderWidth:0 }]
-    },
-    options: { responsive:true, maintainAspectRatio:false, cutout:'50%',
-      plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:ctx=>ctx.label+': '+fmt(ctx.raw)}} }
-    }
-  });
-
-  document.getElementById('vat-table-wrap').innerHTML = `<table>
-    <thead><tr><th>Jurisdiction</th><th class="r">Collected</th><th class="r">Remitted</th><th class="r">Balance Due</th><th style="text-align:center">Next Filing</th><th style="text-align:center">Status</th></tr></thead>
-    <tbody>${vatData.map(r=>`<tr>
-      <td>${r.jurisdiction}</td>
-      <td class="r mono">${fmt(r.collected)}</td>
-      <td class="r mono">${fmt(r.remitted)}</td>
-      <td class="r mono" style="color:var(--orange);font-weight:600">${fmt(r.due)}</td>
-      <td style="text-align:center" class="mono">${r.nextFiling}</td>
-      <td style="text-align:center">${statusBadge(r.status)}</td>
-    </tr>`).join('')}</tbody></table>`;
-}
-
-// ============================================================
-// FILTERS PER TAB
-// ============================================================
-const filterDefs = {
-  pl: `<span class="filter-label">Period:</span>
-    <select class="filter-select" id="filter-period" onchange="renderPL(this.value)">
-      <option value="all">YTD (Full Year)</option>
-      ${months.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}
-    </select>`,
-  channels: `<span class="filter-label">Channel:</span>
-    <select class="filter-select" id="filter-channel" onchange="renderChannels(this.value)">
-      <option value="all">All Channels</option>
-      <option value="amazon">Amazon</option>
-      <option value="dtc">DTC (Shopify)</option>
-      <option value="wholesale">Wholesale</option>
-      <option value="etsy">Etsy</option>
-    </select>`,
-  products: `<span class="filter-label">Category:</span>
-    <select class="filter-select" id="filter-category" onchange="renderProducts(this.value)">
-      <option value="all">All Categories</option>
-      <option value="Watches">Watch Organizers</option>
-      <option value="Knives">Knife Displays</option>
-      <option value="Combo">Combo Decks</option>
-      <option value="Coins">Coin Storage</option>
-      <option value="Lifestyle">Lifestyle</option>
-      <option value="Jewelry">Jewelry</option>
-      <option value="Other">Accessories</option>
-    </select>`,
-};
-
-// ============================================================
-// TAB SWITCHING
-// ============================================================
-let currentTab = 'overview';
-function switchTab(tabId) {
-  currentTab = tabId;
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tabId));
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+tabId));
-  document.getElementById('filters').innerHTML = filterDefs[tabId] || '';
-
-  // Render content for tab (charts need canvas to be visible)
-  setTimeout(()=>{
-    switch(tabId) {
-      case 'overview': renderOverviewCharts(); break;
-      case 'pl': renderPL('all'); break;
-      case 'cashflow': renderCashFlow(); break;
-      case 'channels': renderChannels('all'); break;
-      case 'products': renderProducts('all'); break;
-      case 'inventory': renderInventory(); break;
-      case 'international': renderInternational(); break;
-    }
-  }, 50);
-}
-
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
-});
-
-// ============================================================
-// INIT
-// ============================================================
-renderKPIGrid();
-renderOverviewCharts();
 </script>
 </body>
 </html>
